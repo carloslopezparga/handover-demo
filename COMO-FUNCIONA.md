@@ -24,13 +24,15 @@ public/fotos  Imágenes de ejemplo neutras para las fichas
 | `app/reformas/page.tsx` | **Bandeja de Reformas**: lista de traspasos. |
 | `app/reformas/[id]/page.tsx` | **Detalle de un traspaso**: ficha en solo lectura y botones Aceptar / Devolver. |
 | `app/metricas/page.tsx` | **Panel de métricas**. |
-| `app/layout.tsx` | El "marco" común de todas las pantallas (barra lateral o cabecera en móvil, notificaciones). |
+| `app/layout.tsx` | El "marco" común de todas las pantallas (barra lateral o cabecera en móvil, notificaciones) y las fuentes. |
+| `app/globals.css` | La paleta (tinta, grises y azul) como tokens con nombre por significado, y las animaciones. |
 | `app/not-found.tsx`, `app/error.tsx` | Mensajes amables si una página no existe o algo falla. |
 
 ### `components/` · las piezas
 
-- `AppShell.tsx`: la barra lateral (en móvil, una cabecera ligera) con la marca, el menú, el interruptor de **Modo piloto** y el botón **Reiniciar demo**.
-- `ui.tsx`: botones, estados con punto de color, progreso por segmentos, estados vacíos (con ilustración) y de carga. Así todo tiene el mismo aspecto.
+- `AppShell.tsx`: la barra lateral oscura (en móvil, una cabecera oscura) con la marca, el menú, el interruptor de **Modo piloto** y el botón **Reiniciar demo**.
+- `ui.tsx`: botones, estados con punto de color (o check si está completo), progreso por segmentos, check de éxito animado, estados vacíos (con ilustración) y esqueletos de carga. Así todo tiene el mismo aspecto.
+- `movimiento.ts`: respeta la opción «reducir movimiento» del sistema y recuerda qué vivienda se acaba de firmar para animar su llegada a «Traspasadas».
 - `Notificaciones.tsx`: los avisos que aparecen abajo (p. ej. «Traspaso enviado a reformas»).
 - `Dialogo.tsx`: las ventanas emergentes (nueva vivienda, devolver a Supply, reiniciar).
 - `embudo/`: la tarjeta de cada vivienda y el formulario de «Nueva vivienda».
@@ -72,7 +74,7 @@ Ejemplo, al pulsar **Firmar y enviar a reformas**:
 3. Si está todo (o el modo piloto está encendido), la vivienda pasa a «Traspasada», se apunta en su historial y se crea un **Traspaso** con una copia de la ficha, en estado «Pendiente de revisión».
 4. Aparece la notificación y el traspaso ya está en la bandeja de Reformas.
 
-Si Reformas pulsa **Devolver a Supply**, el traspaso queda como «Devuelto a Supply» con el campo y el comentario, y la vivienda vuelve a **Firma** con una alerta roja. No se puede volver a firmar hasta que Supply corrija ese campo (o lo marque como revisado).
+Si Reformas pulsa **Devolver a Supply**, el traspaso queda como «Devuelto a Supply» con el campo y el comentario, y la vivienda vuelve a **Firma** con una alerta destacada en azul. No se puede volver a firmar hasta que Supply corrija ese campo (o lo marque como revisado).
 
 ## Dónde se configuran los campos obligatorios
 
@@ -91,7 +93,7 @@ La regla de bloqueo es: **para salir de una etapa, tienen que estar completos lo
 
 ## Modo piloto
 
-Es un interruptor en la barra lateral (en móvil, en el menú «⋯» de la cabecera). Encendido, la ficha **avisa en amarillo** de lo que falta pero **deja avanzar**, y apunta en el historial qué campos estaban pendientes. Sirve para introducir la herramienta sin frenar al equipo el primer día y medir cuánto se usa antes de activar el bloqueo real. Por defecto está apagado.
+Es un interruptor en la barra lateral (en móvil, en el menú «⋯» de la cabecera). Encendido, la ficha **avisa en ámbar** de lo que falta pero **deja avanzar**, y apunta en el historial qué campos estaban pendientes. Sirve para introducir la herramienta sin frenar al equipo el primer día y medir cuánto se usa antes de activar el bloqueo real. Por defecto está apagado.
 
 ## Cómo se llevaría a producción
 

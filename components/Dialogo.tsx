@@ -40,30 +40,30 @@ export function Dialogo({ abierto, titulo, descripcion, onCerrar, children, pie 
   if (!abierto) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-tinta/30 p-0 sm:items-center sm:p-4" onMouseDown={onCerrar}>
+    <div className="animar-velo fixed inset-0 z-50 flex items-end justify-center bg-tinta/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-4" onMouseDown={onCerrar}>
       <div
         ref={panel}
         role="dialog"
         aria-modal="true"
         aria-labelledby={idTitulo}
-        className="animar-entrada max-h-[92vh] w-full overflow-y-auto rounded-t-xl border border-borde bg-papel shadow-elevada sm:max-w-lg sm:rounded-xl"
+        className="animar-dialogo max-h-[92vh] w-full overflow-y-auto rounded-t-xl border border-borde bg-superficie shadow-flotante sm:max-w-lg sm:rounded-xl"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4 px-6 pt-6">
           <div>
-            <h2 id={idTitulo} className="font-display text-xl leading-7 font-semibold tracking-[-0.01em] text-tinta">
+            <h2 id={idTitulo} className="font-display text-2xl leading-8 font-semibold tracking-[-0.01em] text-tinta">
               {titulo}
             </h2>
-            {descripcion && <p className="mt-1 text-[15px] text-tinta-suave">{descripcion}</p>}
+            {descripcion && <p className="mt-1 text-[15px] text-secundario">{descripcion}</p>}
           </div>
           <button
             type="button"
             data-cerrar
             onClick={onCerrar}
-            className="-mt-1 -mr-2 rounded-lg p-2 text-tinta-tenue transition-colors hover:bg-crema-oscuro hover:text-tinta"
+            className="-mt-1 -mr-2 rounded-lg p-2 text-secundario transition-colors hover:bg-fondo-2 hover:text-tinta"
             aria-label="Cerrar"
           >
-            <X className="size-5" />
+            <X className="size-5" aria-hidden />
           </button>
         </div>
         <div className="px-6 py-6">{children}</div>

@@ -1,9 +1,9 @@
 // Línea de tiempo vertical de la ficha: estado de cada etapa (completada, en curso,
 // bloqueada) y los nodos que la dibujan.
 
-import { Check } from "lucide-react";
 import { indiceEtapa } from "@/lib/stages";
 import type { EtapaId, Vivienda } from "@/lib/types";
+import { IconoCompleto } from "../ui";
 
 export type EstadoPaso = "completada" | "en-curso" | "bloqueada";
 
@@ -13,23 +13,30 @@ export function estadoPaso(v: Vivienda, etapaId: EtapaId): EstadoPaso {
   return i < actual ? "completada" : i === actual ? "en-curso" : "bloqueada";
 }
 
-/** Nodo de 20 px sobre la línea. Salvia solo si la etapa está completa de verdad. */
+const BASE = "relative z-10 flex size-5 shrink-0 items-center justify-center rounded-full ring-4 ring-fondo";
+
+/** Nodo de 20 px sobre la línea: marino con check si está completa, azul si es la actual. */
 export function NodoEtapa({ estado, numero, conPendientes }: { estado: EstadoPaso; numero: number; conPendientes: boolean }) {
-  const base = "relative z-10 flex size-5 shrink-0 items-center justify-center rounded-full ring-4 ring-papel";
   if (estado === "completada" && !conPendientes)
     return (
-      <span className={`${base} bg-salvia text-white`} aria-hidden>
-        <Check className="size-3" strokeWidth={3} />
+      <span className={`${BASE} rounded-full`} aria-hidden>
+        <IconoCompleto className="size-5" />
       </span>
     );
-  if (estado === "completada" || estado === "en-curso")
+  if (estado === "en-curso")
     return (
-      <span className={`${base} border-[1.5px] bg-papel ${estado === "completada" ? "border-ladrillo" : "border-tinta"}`} aria-hidden>
-        <span className={`size-2 rounded-full ${estado === "completada" ? "bg-ladrillo" : "bg-tinta"}`} />
+      <span className={`${BASE} bg-azul shadow-[0_0_0_4px_var(--color-fondo),0_0_0_7px_rgb(37_99_235/0.18)]`} aria-hidden>
+        <span className="size-2 rounded-full bg-white" />
+      </span>
+    );
+  if (estado === "completada")
+    return (
+      <span className={`${BASE} border-[1.5px] border-azul bg-superficie`} aria-hidden>
+        <span className="size-2 rounded-full bg-azul" />
       </span>
     );
   return (
-    <span className={`${base} border border-borde-fuerte bg-papel text-[11px] font-semibold text-tinta-tenue tabular-nums`} aria-hidden>
+    <span className={`${BASE} border border-borde-fuerte bg-superficie text-[11px] font-semibold text-secundario tabular-nums`} aria-hidden>
       {numero}
     </span>
   );
@@ -38,10 +45,10 @@ export function NodoEtapa({ estado, numero, conPendientes }: { estado: EstadoPas
 /** Último nodo: el traspaso a reformas. */
 export function NodoFinal({ traspasada }: { traspasada: boolean }) {
   return traspasada ? (
-    <span className="relative z-10 flex size-5 shrink-0 items-center justify-center rounded-full bg-salvia text-white ring-4 ring-papel" aria-hidden>
-      <Check className="size-3" strokeWidth={3} />
+    <span className={BASE} aria-hidden>
+      <IconoCompleto className="size-5" animar />
     </span>
   ) : (
-    <span className="relative z-10 block size-5 shrink-0 rounded-full border border-dashed border-tinta-tenue/60 bg-papel ring-4 ring-papel" aria-hidden />
+    <span className={`${BASE} border border-dashed border-secundario/60 bg-fondo`} aria-hidden />
   );
 }

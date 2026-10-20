@@ -3,17 +3,18 @@
 // PANTALLA 2 · Ficha de vivienda: línea de tiempo de etapas con sus campos a la izquierda
 // y panel «Siguiente paso» a la derecha (arriba en móvil, con barra fija abajo).
 
-import { Check, CornerUpLeft } from "lucide-react";
+import { ArrowLeft, CornerUpLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useState, type CSSProperties } from "react";
 import { Historial } from "@/components/ficha/Historial";
 import { BarraAvanceMovil, PanelAvance } from "@/components/ficha/PanelAvance";
 import { estadoPaso, NodoFinal } from "@/components/ficha/PasosEtapas";
 import { SeccionEtapa } from "@/components/ficha/SeccionEtapa";
+import { anunciarLlegada, comportamientoScroll } from "@/components/movimiento";
 import { useNotificar } from "@/components/Notificaciones";
 import { InsigniaTraspaso } from "@/components/reformas/InsigniaTraspaso";
-import { Boton, BotonEnlace, Cargando, Estado, EstadoVacio, Migas } from "@/components/ui";
+import { Boton, BotonEnlace, Cargando, CheckExito, Estado, EstadoVacio, IconoCompleto, Migas } from "@/components/ui";
 import { formatFecha, formatFechaHora, plural } from "@/lib/format";
 import { buscarCampo, ETAPAS, indiceEtapa, NOMBRE_ESTADO } from "@/lib/stages";
 import { useStore } from "@/lib/store";
@@ -36,7 +37,7 @@ export default function FichaPage() {
   const { cargado, viviendas } = useStore();
   const vivienda = viviendas.find((v) => v.id === id);
 
-  if (!cargado) return <Cargando />;
+  if (!cargado) return <Cargando tipo="ficha" />;
 
   if (!vivienda) {
     return (
@@ -58,6 +59,8 @@ function FichaVivienda({ vivienda: v }: { vivienda: Vivienda }) {
   const notificar = useNotificar();
   // Etapas que la persona ha abierto o cerrado a mano (si no, se usa abiertaPorDefecto).
   const [manual, setManual] = useState<Partial<Record<EtapaId, boolean>>>({});
+  // Se acaba de firmar desde esta pantalla: se muestra el estado de éxito animado.
+  const [recienFirmada, setRecienFirmada] = useState(false);
 
   const irACampo = useCallback((clave: string) => {
     const etapa = buscarCampo(clave)?.etapa.id;
@@ -67,11 +70,11 @@ function FichaVivienda({ vivienda: v }: { vivienda: Vivienda }) {
       requestAnimationFrame(() => {
         const el = document.getElementById(`campo-${clave}`);
         if (!el) return;
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.scrollIntoView({ behavior: comportamientoScroll(), block: "center" });
         el.classList.remove("destello");
         void el.offsetWidth; // reinicia la animación si se pulsa dos veces
         el.classList.add("destello");
-        window.setTimeout(() => el.classList.remove("destello"), 2400);
+        window.setTimeout(() => el.classList.remove("destello"), 1800);
         document.getElementById(`input-${clave}`)?.focus({ preventScroll: true });
       }),
     );
@@ -92,12 +95,14 @@ function FichaVivienda({ vivienda: v }: { vivienda: Vivienda }) {
     }
     setManual({});
     if (r.traspaso) {
+      setRecienFirmada(true);
+      anunciarLlegada(v.id);
       notificar({
         titulo: "Traspaso enviado a reformas · aviso enviado al coordinador",
         descripcion: `${r.traspaso.id} · ${v.ficha.direccion as string}`,
         accion: { etiqueta: "Ver en la bandeja de Reformas", href: `/reformas/${r.traspaso.id}` },
       });
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: comportamientoScroll() });
       return;
     }
     notificar({
@@ -112,7 +117,9 @@ function FichaVivienda({ vivienda: v }: { vivienda: Vivienda }) {
     });
     if (r.hasta !== "traspasada") {
       const siguiente = r.hasta;
-      requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById(`etapa-${siguiente}`)?.scrollIntoView({ behavior: "smooth", block: "start" })));
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => document.getElementById(`etapa-${siguiente}`)?.scrollIntoView({ behavior: comportamientoScroll(), block: "start" })),
+      );
     }
   }
 
@@ -120,20 +127,22 @@ function FichaVivienda({ vivienda: v }: { vivienda: Vivienda }) {
     <div className="pb-24 lg:pb-0">
       <Migas items={[{ etiqueta: "Embudo", href: "/" }, { etiqueta: v.id }]} />
 
-      <header className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6 lg:mb-10">
+      <header className="animar-entrada mb-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6 lg:mb-10">
         <div className="min-w-0">
-          <h1 className="font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.025em] text-balance text-tinta sm:text-[34px]">{(v.ficha.direccion as string) || "Sin dirección"}</h1>
-          <p className="mt-2 text-[15px] text-tinta-suave">
+          <h1 className="font-display text-[30px] leading-[1.1] font-semibold tracking-[-0.015em] text-balance text-tinta sm:text-[38px]">
+            {(v.ficha.direccion as string) || "Sin dirección"}
+          </h1>
+          <p className="mt-2 text-[15px] text-secundario-fondo">
             {zona && `${zona} · `}Alta el {formatFecha(v.creadaEn)}
           </p>
         </div>
-        <div className="shrink-0 sm:pt-2">
+        <div className="shrink-0 sm:pt-3">
           {soloLectura ? (
             <Estado tono="completo" className="text-sm">
               Traspasada a reformas
             </Estado>
           ) : (
-            <Estado tono="actual" className="text-sm">
+            <Estado tono="actual" className="rounded-full border border-borde bg-superficie py-1.5 pr-3 pl-2.5 text-sm shadow-suave">
               {NOMBRE_ESTADO[v.etapa]} · etapa {indiceEtapa(v.etapa) + 1} de {ETAPAS.length}
             </Estado>
           )}
@@ -143,11 +152,11 @@ function FichaVivienda({ vivienda: v }: { vivienda: Vivienda }) {
       {v.devolucion && v.etapa === "firma" && (
         <AlertaDevolucion vivienda={v} pendiente={Boolean(campoDevuelto)} onIrCampo={irACampo} onRevisada={() => marcarDevolucionRevisada(v.id)} />
       )}
-      {soloLectura && traspaso && <BannerTraspasada traspaso={traspaso} />}
+      {soloLectura && traspaso && <BannerTraspasada traspaso={traspaso} recien={recienFirmada} />}
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-12">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_380px] xl:gap-12">
         {!soloLectura && (
-          <aside className="lg:col-start-2 lg:row-start-1" aria-label="Siguiente paso">
+          <aside className="animar-entrada lg:col-start-2 lg:row-start-1" style={{ "--retraso": "80ms" } as CSSProperties} aria-label="Siguiente paso">
             <div className="lg:sticky lg:top-6">
               <PanelAvance vivienda={v} pendientes={pendientes} modoPiloto={modoPiloto} onAvanzar={avanzar} onIrCampo={irACampo} />
             </div>
@@ -172,13 +181,13 @@ function FichaVivienda({ vivienda: v }: { vivienda: Vivienda }) {
               />
             ))}
             <li className="relative grid grid-cols-[20px_minmax(0,1fr)] gap-x-4">
-              <span className="absolute top-0 left-[9.5px] h-6 w-px bg-borde" aria-hidden />
+              <span className={`absolute top-0 left-[9.5px] h-6 w-px ${soloLectura ? "bg-marino/40" : "bg-borde-fuerte"}`} aria-hidden />
               <div className="pt-[14px]">
                 <NodoFinal traspasada={soloLectura} />
               </div>
               <div className="py-3">
-                <p className={`font-display text-lg leading-6 font-semibold tracking-[-0.01em] ${soloLectura ? "text-tinta" : "text-tinta-suave"}`}>Reformas</p>
-                <p className="mt-0.5 text-sm text-tinta-tenue">{soloLectura ? `Traspasada${traspaso ? ` · ${traspaso.id}` : ""}` : "El traspaso se envía solo al firmar"}</p>
+                <p className={`font-display text-[19px] leading-6 font-semibold tracking-[-0.01em] ${soloLectura ? "text-tinta" : "text-pizarra"}`}>Reformas</p>
+                <p className="mt-0.5 text-sm text-secundario-fondo">{soloLectura ? `Traspasada${traspaso ? ` · ${traspaso.id}` : ""}` : "El traspaso se envía solo al firmar"}</p>
               </div>
             </li>
           </ol>
@@ -199,35 +208,37 @@ function AlertaDevolucion({ vivienda, pendiente, onIrCampo, onRevisada }: { vivi
   const existeCampo = Boolean(buscarCampo(d.campo));
   if (!pendiente) {
     return (
-      <div className="mb-8 flex items-start gap-3 rounded-xl border border-borde px-4 py-3 sm:px-5" role="status">
-        <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-salvia text-white" aria-hidden>
-          <Check className="size-3" strokeWidth={3} />
-        </span>
-        <p className="text-[15px] text-tinta-suave">
-          <strong className="font-semibold text-salvia">Corrección hecha:</strong> «{d.campoEtiqueta}» ya está revisado. Cuando la ficha esté completa, vuelve a firmar para enviar un nuevo traspaso.
+      <div className="animar-entrada mb-8 flex items-start gap-3 rounded-xl border border-borde bg-superficie px-4 py-3 sm:px-5" role="status">
+        <IconoCompleto className="mt-0.5 size-5" animar />
+        <p className="text-[15px] text-pizarra">
+          <strong className="font-semibold text-marino">Corrección hecha:</strong> «{d.campoEtiqueta}» ya está revisado. Cuando la ficha esté completa, vuelve a firmar para enviar un nuevo traspaso.
         </p>
       </div>
     );
   }
   return (
-    <section className="mb-8 rounded-xl border border-ladrillo/25 bg-ladrillo-claro/50 p-4 sm:p-6" role="alert">
-      <p className="flex flex-wrap items-center gap-x-2 text-[13px] font-medium text-ladrillo">
-        <CornerUpLeft className="size-3.5" strokeWidth={2.25} aria-hidden />
+    <section className="animar-entrada relative mb-8 overflow-hidden rounded-xl border border-azul/30 bg-superficie p-4 pl-5 shadow-suave sm:p-6 sm:pl-7" role="alert">
+      <span className="absolute inset-y-0 left-0 w-1 bg-azul" aria-hidden />
+      <p className="flex flex-wrap items-center gap-x-2 text-[13px] font-semibold text-azul">
+        <CornerUpLeft className="size-3.5" aria-hidden />
         Devuelta por Reformas
-        <span className="font-normal text-tinta-tenue tabular-nums">· {formatFechaHora(d.fecha)}</span>
+        <span className="font-normal text-secundario tabular-nums">· {formatFechaHora(d.fecha)}</span>
       </p>
-      <p className="mt-2 font-display text-xl leading-7 font-semibold tracking-[-0.01em] text-tinta">{d.campoEtiqueta}</p>
-      <p className="mt-1 max-w-3xl text-[15px] text-tinta-suave">«{d.comentario}»</p>
+      <p className="mt-2 font-display text-[22px] leading-7 font-semibold tracking-[-0.01em] text-tinta">{d.campoEtiqueta}</p>
+      <p className="mt-1 max-w-3xl text-[15px] text-pizarra">«{d.comentario}»</p>
       <div className="mt-4 flex flex-wrap items-center gap-2">
         {existeCampo && (
-          <Boton variante="accion" tamano="sm" onClick={() => onIrCampo(d.campo)}>
+          <Boton tamano="sm" onClick={() => onIrCampo(d.campo)}>
             Ir al campo
           </Boton>
         )}
         <Boton variante="secundario" tamano="sm" onClick={onRevisada}>
           Marcar como revisado
         </Boton>
-        <Link href={`/reformas/${d.traspasoId}`} className="rounded text-sm font-medium sm:ml-2 text-tinta-suave underline decoration-tinta/20 underline-offset-4 transition-colors hover:text-tinta hover:decoration-tinta/50">
+        <Link
+          href={`/reformas/${d.traspasoId}`}
+          className="rounded text-sm font-medium text-pizarra underline decoration-pizarra/30 underline-offset-4 transition-colors hover:text-tinta hover:decoration-tinta/60 sm:ml-2"
+        >
           Ver traspaso {d.traspasoId}
         </Link>
       </div>
@@ -235,21 +246,39 @@ function AlertaDevolucion({ vivienda, pendiente, onIrCampo, onRevisada }: { vivi
   );
 }
 
-function BannerTraspasada({ traspaso }: { traspaso: Traspaso }) {
+/** Vivienda traspasada. Si se acaba de firmar, es el clímax de la demo: check animado y siguiente paso claro. */
+function BannerTraspasada({ traspaso, recien }: { traspaso: Traspaso; recien: boolean }) {
   return (
-    <section className="mb-8 flex flex-col gap-4 rounded-xl border border-borde p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-      <div className="min-w-0">
+    <section
+      className={`animar-entrada mb-8 flex flex-col gap-5 rounded-xl border bg-superficie p-5 sm:flex-row sm:items-center sm:p-6 ${recien ? "border-marino/25 shadow-elevacion" : "border-borde"}`}
+      role={recien ? "status" : undefined}
+    >
+      <CheckExito animar={recien} retraso={recien ? 300 : 0} className={recien ? "size-14" : "size-10"} />
+      <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span className="font-display text-lg leading-6 font-semibold tracking-[-0.01em] text-tinta">Traspaso {traspaso.id}</span>
+          <span className="text-[13px] font-semibold text-secundario tabular-nums">Traspaso {traspaso.id}</span>
           <InsigniaTraspaso estado={traspaso.estado} />
         </p>
-        <p className="mt-1 text-[15px] text-tinta-suave">
-          Enviado el {formatFechaHora(traspaso.creadoEn)}. La ficha queda en solo lectura: Reformas trabaja con la copia enviada.
+        <h2 className="mt-1 font-display text-2xl leading-8 font-semibold tracking-[-0.01em] text-tinta">
+          {recien ? "Traspaso enviado a reformas" : "Traspasada a reformas"}
+        </h2>
+        <p className="mt-1 text-[15px] text-pizarra">
+          {recien
+            ? "Se ha creado con una copia completa de la ficha y se ha avisado al coordinador de obra. Nadie tiene que copiar datos a mano."
+            : `Enviado el ${formatFechaHora(traspaso.creadoEn)}. La ficha queda en solo lectura: Reformas trabaja con la copia enviada.`}
         </p>
       </div>
-      <BotonEnlace href={`/reformas/${traspaso.id}`} variante="secundario">
-        Ver en Reformas
-      </BotonEnlace>
+      <div className="flex shrink-0 flex-col gap-2 sm:items-end">
+        <BotonEnlace href={`/reformas/${traspaso.id}`} variante={recien ? "primario" : "secundario"}>
+          Ver en Reformas
+        </BotonEnlace>
+        {recien && (
+          <Link href="/" className="inline-flex items-center gap-1.5 rounded text-sm font-medium text-pizarra transition-colors hover:text-tinta">
+            <ArrowLeft className="size-4" aria-hidden />
+            Volver al embudo
+          </Link>
+        )}
+      </div>
     </section>
   );
 }

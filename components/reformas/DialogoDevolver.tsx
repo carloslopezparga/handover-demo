@@ -76,7 +76,7 @@ export function DialogoDevolver({ traspaso, abierto, onCerrar, onDevolver }: Pro
               <option value="otro">Otro motivo</option>
             </optgroup>
           </select>
-          {intentado && !campoValido && <p className="mt-2 text-[13px] font-medium text-ladrillo">Elige el campo afectado.</p>}
+          {intentado && !campoValido && <p className="mt-2 text-[13px] font-medium text-error">Elige el campo afectado.</p>}
         </div>
         <div>
           <label htmlFor="dev-comentario" className={CLASE_ETIQUETA}>
@@ -92,7 +92,7 @@ export function DialogoDevolver({ traspaso, abierto, onCerrar, onDevolver }: Pro
             className={CLASE_INPUT}
             aria-invalid={intentado && !comentarioValido}
           />
-          {intentado && !comentarioValido && <p className="mt-2 text-[13px] font-medium text-ladrillo">Explica brevemente el motivo (mínimo 5 caracteres).</p>}
+          {intentado && !comentarioValido && <p className="mt-2 text-[13px] font-medium text-error">Explica brevemente el motivo (mínimo 5 caracteres).</p>}
         </div>
       </div>
     </Dialogo>

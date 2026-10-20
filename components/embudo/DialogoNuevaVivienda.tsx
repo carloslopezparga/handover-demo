@@ -70,7 +70,7 @@ export function DialogoNuevaVivienda({ abierto, onCerrar }: { abierto: boolean; 
             autoComplete="off"
           />
           {intentado && !direccionValida && (
-            <p id="nv-direccion-error" className="mt-2 text-[13px] font-medium text-ladrillo">
+            <p id="nv-direccion-error" className="mt-2 text-[13px] font-medium text-error">
               Escribe una dirección (mínimo 5 caracteres).
             </p>
           )}
