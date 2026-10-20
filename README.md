@@ -16,7 +16,7 @@ Prototipo funcional de una **ficha de vivienda única** para el equipo de Supply
 | Detalle del traspaso | `/reformas/[id]` | Ficha completa en solo lectura (fotos y alcance incluidos). Acciones «Aceptar» y «Devolver a Supply». |
 | Panel de métricas | `/metricas` | % de traspasos completos a la primera, devoluciones y motivos, viviendas por etapa, % de fichas completas y tiempo firma → traspaso. |
 
-Además: interruptor global **Modo piloto** (avisa en amarillo en lugar de bloquear y registra los avances con campos pendientes) y botón **Reiniciar demo** para restaurar los datos de ejemplo.
+Además: interruptor global **Modo piloto** (avisa en ámbar en lugar de bloquear y registra los avances con campos pendientes) y botón **Reiniciar demo** para restaurar los datos de ejemplo.
 
 ## Arrancarlo en local
 
@@ -65,4 +65,4 @@ No hay backend ni base de datos: los datos de ejemplo viven en memoria y se guar
 
 ## Tecnología
 
-Next.js (App Router) · TypeScript · Tailwind CSS · iconos de Lucide. Todas las marcas, direcciones y personas de los datos de ejemplo son ficticias.
+Next.js (App Router) · TypeScript · Tailwind CSS · iconos de Lucide · Source Serif 4 e Inter. Paleta y animaciones definidas como tokens en `app/globals.css` (las animaciones respetan «reducir movimiento» del sistema). Todas las marcas, direcciones y personas de los datos de ejemplo son ficticias.

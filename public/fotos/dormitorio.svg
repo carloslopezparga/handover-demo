@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
-<rect width="800" height="600" fill="#E9E3D6"/>
+<rect width="800" height="600" fill="#E6EBF2"/>
 
-<polygon points="0,440 800,440 800,600 0,600" fill="#D8CFBC"/>
-<rect x="110" y="110" width="200" height="220" fill="#F7F4EC" stroke="#C4BAA4" stroke-width="10"/>
-<rect x="380" y="250" width="320" height="40" rx="10" fill="#A9B9B3"/>
-<rect x="360" y="290" width="360" height="130" rx="14" fill="#F7F4EC" stroke="#C4BAA4" stroke-width="4"/>
-<rect x="380" y="300" width="100" height="40" rx="10" fill="#B9C7C2"/>
-<rect x="600" y="300" width="100" height="40" rx="10" fill="#B9C7C2"/>
+<polygon points="0,440 800,440 800,600 0,600" fill="#D5DDE8"/>
+<rect x="110" y="110" width="200" height="220" fill="#F8FAFC" stroke="#B6C2D2" stroke-width="10"/>
+<rect x="380" y="250" width="320" height="40" rx="10" fill="#93ACD6"/>
+<rect x="360" y="290" width="360" height="130" rx="14" fill="#F8FAFC" stroke="#B6C2D2" stroke-width="4"/>
+<rect x="380" y="300" width="100" height="40" rx="10" fill="#A9BEE0"/>
+<rect x="600" y="300" width="100" height="40" rx="10" fill="#A9BEE0"/>
 <rect x="28" y="508" rx="12" width="254" height="64" fill="#FFFFFF" fill-opacity="0.9"/>
-<text x="56" y="552" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="34" font-weight="600" fill="#3F4A44">Dormitorio</text>
+<text x="56" y="552" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="34" font-weight="600" fill="#1E293B">Dormitorio</text>
 </svg>

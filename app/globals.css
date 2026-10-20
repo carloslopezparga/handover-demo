@@ -1,37 +1,48 @@
 @import "tailwindcss";
 
 @theme {
-  /* Paleta de marca. Ladrillo = requiere acción · Salvia = completo · Tinta = todo lo demás */
-  --color-crema: #f5f1e8;
-  --color-crema-oscuro: #ede7da;
-  --color-papel: #fcfaf6;
-  --color-tinta: #10292a;
-  --color-tinta-hover: #1d3b3c;
-  --color-tinta-suave: #435759;
-  --color-tinta-tenue: #5e6e6c;
-  --color-borde: #e4ddcd;
-  --color-borde-fuerte: #d3cab6;
-  --color-ladrillo: #b4482a;
-  --color-ladrillo-oscuro: #963a20;
-  --color-ladrillo-claro: #f7e8e1;
-  --color-salvia: #3e6667;
-  --color-salvia-oscuro: #2f5051;
-  --color-salvia-claro: #e4ece9;
-  /* Solo para el modo piloto («avisa en amarillo») */
-  --color-ambar: #7a5600;
-  --color-ambar-claro: #fbf1d4;
-  --color-ambar-borde: #e2bf5e;
+  /*
+   * Paleta (la misma familia que la presentación: negros, blancos, grises y azul).
+   * Cada color se usa por su significado, nunca «a mano» en un componente:
+   *   azul    → lo que pide acción o atención (botón principal, campos que faltan, «Siguiente paso»,
+   *             pestaña activa, cifras clave)
+   *   marino  → completo / aceptado, siempre junto a un icono de check
+   *   error   → solo mensajes de campo inválido
+   *   piloto  → solo el modo piloto
+   */
+  --color-tinta: #0b1220; /* texto principal y superficies oscuras */
+  --color-tinta-2: #1e293b; /* divisores y relieves sobre oscuro */
+  --color-pizarra: #334155; /* texto de apoyo con peso */
+  --color-fondo: #f4f6f9; /* fondo de la app */
+  --color-fondo-2: #ecf0f5; /* fondo secundario: columnas, pistas, estados deshabilitados */
+  --color-superficie: #ffffff; /* tarjetas y paneles */
+  --color-borde: #e2e8f0;
+  --color-borde-fuerte: #cbd5e1;
+  --color-secundario: #64748b; /* texto secundario sobre superficie blanca (4,8:1) */
+  /* #64748B no llega a AA sobre los fondos grises (4,4:1 y 4,2:1): este tono sí (5,7:1 y 5,4:1) */
+  --color-secundario-fondo: #556275;
 
-  --shadow-suave: 0 1px 2px rgb(16 41 42 / 0.04), 0 1px 1px rgb(16 41 42 / 0.03);
-  --shadow-elevada: 0 2px 4px rgb(16 41 42 / 0.04), 0 12px 32px -4px rgb(16 41 42 / 0.14);
+  --color-azul: #2563eb;
+  --color-azul-hover: #1d4ed8; /* también texto azul sobre azul claro (5,4:1) */
+  --color-azul-claro: #dbe7fe;
+  --color-marino: #1e3a8a;
+  --color-error: #dc2626;
+  --color-piloto: #b45309;
+  --color-piloto-claro: #fef3c7;
+
+  --shadow-suave: 0 1px 2px rgb(11 18 32 / 0.05);
+  --shadow-elevacion: 0 1px 2px rgb(11 18 32 / 0.04), 0 8px 24px -6px rgb(11 18 32 / 0.12);
+  --shadow-flotante: 0 2px 6px rgb(11 18 32 / 0.06), 0 24px 48px -12px rgb(11 18 32 / 0.28);
 
   --ease-suave: cubic-bezier(0.2, 0, 0, 1);
+  --ease-salida: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Las fuentes las carga next/font en <html> (app/layout.tsx) como variables CSS. */
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-display: var(--font-bricolage), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /* Serif editorial para títulos de página y cifras grandes (casa con el Georgia de la presentación) */
+  --font-display: var(--font-serif), Georgia, "Times New Roman", serif;
 }
 
 :root {
@@ -51,7 +62,7 @@ html {
 }
 
 body {
-  background: var(--color-crema);
+  background: var(--color-fondo);
   color: var(--color-tinta);
   font-family: var(--font-sans);
   font-size: 15px;
@@ -62,13 +73,32 @@ body {
 }
 
 ::selection {
-  background: rgb(16 41 42 / 0.14);
+  background: var(--color-azul-claro);
 }
 
 /* Foco visible y coherente en todo lo interactivo (los inputs tienen su propio anillo) */
-:where(a, button, summary, [role="switch"], [role="tab"], [role="radio"]):focus-visible {
-  outline: 2px solid var(--color-tinta);
+:where(a, button, summary, select, [role="switch"], [role="tab"], [role="radio"], [tabindex]):focus-visible {
+  outline: 2px solid var(--color-azul);
   outline-offset: 2px;
+}
+
+/* Sobre superficies oscuras el foco va en azul claro para que se vea */
+.sobre-oscuro :where(a, button, [role="switch"]):focus-visible {
+  outline-color: var(--color-azul-claro);
+}
+
+/*
+ * Iconos de Lucide con el mismo grosor de trazo aparente (~1,2 px) sea cual sea su tamaño:
+ * el trazo se define en unidades del viewBox de 24, así que se compensa por tamaño.
+ */
+.lucide {
+  stroke-width: 1.75;
+}
+.lucide:is(.size-5, .size-6) {
+  stroke-width: 1.5;
+}
+.lucide:is(.size-3, .size-3\.5) {
+  stroke-width: 2.5;
 }
 
 /* Barras de desplazamiento discretas (embudo en horizontal) */
@@ -77,20 +107,12 @@ body {
   scrollbar-color: var(--color-borde-fuerte) transparent;
 }
 
-/* Resalte breve al saltar a un campo desde la lista de pendientes */
-@keyframes destello {
-  0% {
-    box-shadow: 0 0 0 0 rgb(180 72 42 / 0.45);
-  }
-  100% {
-    box-shadow: 0 0 0 10px rgb(180 72 42 / 0);
-  }
-}
+/* ---------------------------------------------------------------------------
+ * Movimiento. Todo es CSS salvo dos detalles en JS (contadores de métricas y la
+ * llegada de la vivienda a «Traspasadas»). Con prefers-reduced-motion se apaga todo.
+ * ------------------------------------------------------------------------ */
 
-.destello {
-  animation: destello 1s ease-out 2;
-}
-
+/* Entrada escalonada: cada elemento recibe su retraso en la variable --retraso */
 @keyframes entrar {
   from {
     opacity: 0;
@@ -98,14 +120,16 @@ body {
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 
 .animar-entrada {
-  animation: entrar 0.2s var(--ease-suave);
+  animation: entrar 220ms var(--ease-salida) both;
+  animation-delay: var(--retraso, 0ms);
 }
 
+/* Paneles que se despliegan (etapas de la ficha, menú móvil) */
 @keyframes desplegar {
   from {
     opacity: 0;
@@ -113,18 +137,209 @@ body {
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 
 .animar-despliegue {
-  animation: desplegar 0.18s var(--ease-suave);
+  animation: desplegar 180ms var(--ease-suave);
+}
+
+/* Ventanas modales: velo y panel */
+@keyframes velo {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes dialogo {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+.animar-velo {
+  animation: velo 160ms ease-out;
+}
+
+.animar-dialogo {
+  animation: dialogo 220ms var(--ease-salida);
+}
+
+/* Avisos flotantes: entran desde abajo y salen desvaneciéndose */
+@keyframes aviso-entra {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+}
+
+@keyframes aviso-sale {
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}
+
+.aviso-entra {
+  animation: aviso-entra 260ms var(--ease-salida);
+}
+
+.aviso-sale {
+  animation: aviso-sale 180ms ease-in forwards;
+}
+
+/* Cambio de una cifra (p. ej. «Faltan 2» → «Faltan 1») */
+@keyframes cifra {
+  from {
+    opacity: 0;
+    transform: translateY(35%);
+  }
+}
+
+.animar-cifra {
+  display: inline-block;
+  animation: cifra 260ms var(--ease-salida);
+}
+
+/* Aparición con un pequeño rebote (checks de «completo») */
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animar-pop {
+  animation: pop 320ms var(--ease-suave) both;
+  animation-delay: var(--retraso, 0ms);
+}
+
+/* Check que se dibuja (momento de la firma, traspaso aceptado) */
+@keyframes dibujar {
+  from {
+    stroke-dashoffset: var(--longitud, 40);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.trazo-dibujado {
+  stroke-dasharray: var(--longitud, 40);
+  animation: dibujar 420ms var(--ease-suave) both;
+  animation-delay: var(--retraso, 0ms);
+}
+
+/* Onda que se expande una vez alrededor del check de éxito */
+@keyframes onda {
+  from {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+.animar-onda {
+  animation: onda 900ms var(--ease-salida) 260ms both;
+}
+
+/* Resalte breve en azul al saltar a un campo desde la lista de pendientes */
+@keyframes destello {
+  0% {
+    background-color: var(--color-azul-claro);
+    box-shadow: 0 0 0 2px var(--color-azul);
+  }
+  70% {
+    background-color: rgb(219 231 254 / 0.6);
+    box-shadow: 0 0 0 2px rgb(37 99 235 / 0.5);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: 0 0 0 2px rgb(37 99 235 / 0);
+  }
+}
+
+.destello {
+  animation: destello 1.6s var(--ease-suave);
+}
+
+/* Vivienda que acaba de llegar a «Traspasadas»: halo azul que se apaga */
+@keyframes halo {
+  0%,
+  45% {
+    box-shadow: 0 0 0 2px var(--color-azul), 0 8px 24px -6px rgb(37 99 235 / 0.35);
+  }
+  100% {
+    box-shadow: 0 0 0 2px rgb(37 99 235 / 0), 0 8px 24px -6px rgb(37 99 235 / 0);
+  }
+}
+
+.halo-llegada {
+  animation: halo 2.8s ease-out 1.5s both;
+}
+
+/* Barras de las métricas: crecen desde cero */
+@keyframes crecer {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.barra-crece {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: crecer 700ms var(--ease-salida) both;
+  animation-delay: var(--retraso, 0ms);
+}
+
+/* Esqueletos de carga con un brillo sutil */
+@keyframes brillo {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.esqueleto {
+  background-color: var(--color-fondo-2);
+  background-image: linear-gradient(90deg, transparent 25%, rgb(255 255 255 / 0.7) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: brillo 1.6s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .destello,
-  .animar-entrada,
-  .animar-despliegue {
-    animation: none;
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .esqueleto {
+    animation: none !important;
+    background-image: none;
+  }
+
+  /* Sin halo animado: la tarjeta recién llegada solo lleva su marca fija */
+  .halo-llegada {
+    animation: none !important;
   }
 }

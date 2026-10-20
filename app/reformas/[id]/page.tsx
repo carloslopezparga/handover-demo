@@ -2,16 +2,16 @@
 
 // Detalle de un traspaso en Reformas: ficha completa en solo lectura y acciones Aceptar / Devolver.
 
-import { CornerUpLeft } from "lucide-react";
+import { Check, CornerUpLeft, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import { useNotificar } from "@/components/Notificaciones";
 import { DialogoDevolver } from "@/components/reformas/DialogoDevolver";
 import { FichaSoloLectura } from "@/components/reformas/FichaSoloLectura";
 import { InsigniaTraspaso } from "@/components/reformas/InsigniaTraspaso";
 import { CampoFotos } from "@/components/ficha/CampoFotos";
-import { Boton, BotonEnlace, Cargando, EstadoVacio, Migas, Punto, TituloSeccion } from "@/components/ui";
+import { Boton, BotonEnlace, Cargando, CheckExito, EstadoVacio, Migas, Punto, TituloSeccion } from "@/components/ui";
 import { formatDuracion, formatFechaHora } from "@/lib/format";
 import { buscarCampo } from "@/lib/stages";
 import { useStore } from "@/lib/store";
@@ -27,7 +27,7 @@ export default function DetalleTraspasoPage() {
   const { cargado, traspasos } = useStore();
   const traspaso = traspasos.find((t) => t.id === id);
 
-  if (!cargado) return <Cargando />;
+  if (!cargado) return <Cargando tipo="lista" />;
   if (!traspaso) {
     return (
       <EstadoVacio
@@ -45,6 +45,8 @@ function DetalleTraspaso({ traspaso: t }: { traspaso: Traspaso }) {
   const { aceptarTraspaso, devolverTraspaso } = useStore();
   const notificar = useNotificar();
   const [devolviendo, setDevolviendo] = useState(false);
+  // Se acaba de aceptar desde esta pantalla: el aviso de «Aceptado» entra con el check animado.
+  const [recienAceptado, setRecienAceptado] = useState(false);
   const pendiente = t.estado === "Pendiente de revisión";
   const fotos = Array.isArray(t.ficha.fotos) ? (t.ficha.fotos as string[]) : [];
 
@@ -52,13 +54,13 @@ function DetalleTraspaso({ traspaso: t }: { traspaso: Traspaso }) {
     <div className="mx-auto max-w-5xl">
       <Migas items={[{ etiqueta: "Reformas", href: "/reformas" }, { etiqueta: t.id }]} />
 
-      <header className="mb-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-10">
+      <header className="animar-entrada mb-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-10">
         <div className="min-w-0">
           <InsigniaTraspaso estado={t.estado} className="text-sm" />
-          <h1 className="mt-3 font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.025em] text-balance text-tinta sm:text-[34px]">
+          <h1 className="mt-3 font-display text-[30px] leading-[1.1] font-semibold tracking-[-0.015em] text-balance text-tinta sm:text-[38px]">
             {(t.ficha.direccion as string) || "Sin dirección"}
           </h1>
-          <p className="mt-2 text-[15px] text-tinta-suave">
+          <p className="mt-2 text-[15px] text-secundario-fondo">
             {[t.ficha.barrio, t.ficha.ciudad].filter(Boolean).join(", ")} · Recibido {formatFechaHora(t.creadoEn)} (
             {formatDuracion(new Date(t.creadoEn).getTime() - new Date(t.firmadoEn).getTime()).toLowerCase()} tras la firma) ·{" "}
             <Link href={`/vivienda/${t.viviendaId}`} className="rounded font-medium text-tinta underline decoration-tinta/25 underline-offset-4 transition-colors hover:decoration-tinta">
@@ -75,9 +77,11 @@ function DetalleTraspaso({ traspaso: t }: { traspaso: Traspaso }) {
             <Boton
               onClick={() => {
                 aceptarTraspaso(t.id);
+                setRecienAceptado(true);
                 notificar({ titulo: "Traspaso aceptado", descripcion: "Supply recibe la confirmación. La obra puede planificarse." });
               }}
             >
+              <Check className="size-4" aria-hidden />
               Aceptar
             </Boton>
           </div>
@@ -85,32 +89,34 @@ function DetalleTraspaso({ traspaso: t }: { traspaso: Traspaso }) {
       </header>
 
       {t.estado === "Aceptado" && (
-        <Aviso tono="completo">
-          <strong className="font-semibold text-tinta">Aceptado</strong> el {formatFechaHora(t.revisadoEn)}. La ficha llegó completa.
+        <Aviso icono={<CheckExito animar={recienAceptado} className="size-6" />} destacado={recienAceptado}>
+          <strong className="font-semibold text-marino">Aceptado</strong> el {formatFechaHora(t.revisadoEn)}. La ficha llegó completa.
         </Aviso>
       )}
       {t.estado === "Devuelto a Supply" && t.motivoDevolucion && (
-        <Aviso tono="neutro">
+        <Aviso icono={<CornerUpLeft className="mt-1 size-4 text-pizarra" aria-hidden />}>
           <strong className="font-semibold text-tinta">Devuelto a Supply</strong> el {formatFechaHora(t.revisadoEn)} · Campo: {t.motivoDevolucion.campoEtiqueta}
           <span className="mt-1 block">«{t.motivoDevolucion.comentario}»</span>
         </Aviso>
       )}
       {t.camposPendientes && t.camposPendientes.length > 0 && (
-        <Aviso tono="aviso">
+        <Aviso icono={<TriangleAlert className="mt-1 size-4" aria-hidden />} piloto>
           <strong className="font-semibold">Firmado en modo piloto con campos pendientes:</strong> {t.camposPendientes.join(", ")}.
         </Aviso>
       )}
 
-      <section className="mb-10 rounded-xl border border-borde bg-white p-6 sm:p-8">
-        <TituloSeccion>Resumen para obra</TituloSeccion>
+      <section className="animar-entrada mb-10 rounded-xl border border-borde bg-superficie p-5 shadow-suave sm:p-8" style={{ "--retraso": "80ms" } as CSSProperties}>
+        <TituloSeccion detalle="Lo que el equipo de obra necesita para empezar.">Resumen para obra</TituloSeccion>
         <ResumenObra ficha={t.ficha} />
         <h3 className="mt-8 mb-3 text-sm font-medium text-tinta">
-          Fotos <span className="font-normal text-tinta-tenue tabular-nums">· {fotos.length}</span>
+          Fotos <span className="font-normal text-secundario tabular-nums">· {fotos.length}</span>
         </h3>
         <CampoFotos id="fotos-traspaso" valor={fotos} onCambio={() => {}} soloLectura />
       </section>
 
-      <TituloSeccion detalle="Copia congelada: no cambia aunque Supply edite después la vivienda.">Ficha completa en el momento de la firma</TituloSeccion>
+      <TituloSeccion detalle={<span className="text-secundario-fondo">Copia congelada: no cambia aunque Supply edite después la vivienda.</span>}>
+        Ficha completa en el momento de la firma
+      </TituloSeccion>
       <FichaSoloLectura ficha={t.ficha} resaltar={t.motivoDevolucion?.campo} fotosEnResumen />
 
       {pendiente && (
@@ -143,7 +149,7 @@ function ValorResumen({ clave, ficha, children }: { clave: string; ficha: Ficha;
   const vacio = texto === "—" || (Array.isArray(valor) && valor.length === 0);
   if (vacio)
     return (
-      <span className="inline-flex items-center gap-2 text-[15px] font-medium text-ladrillo">
+      <span className="inline-flex items-center gap-2 text-[15px] font-medium tracking-normal text-azul">
         <Punto tono="accion" />
         Sin dato
       </span>
@@ -158,10 +164,14 @@ function ResumenObra({ ficha }: { ficha: Ficha }) {
   return (
     <div>
       <dl>
-        <dt className="text-[13px] font-medium text-tinta-tenue">{etiqueta("alcanceReforma")}</dt>
-        <dd className="mt-1 text-lg leading-7 font-medium text-tinta">
+        <dt className="text-[13px] font-medium text-secundario">{etiqueta("alcanceReforma")}</dt>
+        <dd className="mt-2 flex flex-wrap gap-2">
           {alcance.length > 0 ? (
-            alcance.map((v) => partidas?.opciones?.find((o) => o.valor === v)?.etiqueta ?? v).join(" · ")
+            alcance.map((v) => (
+              <span key={v} className="inline-flex h-8 items-center rounded-lg border border-borde bg-fondo px-3 text-[15px] font-medium text-tinta">
+                {partidas?.opciones?.find((o) => o.valor === v)?.etiqueta ?? v}
+              </span>
+            ))
           ) : (
             <ValorResumen clave="alcanceReforma" ficha={ficha} />
           )}
@@ -170,9 +180,9 @@ function ResumenObra({ ficha }: { ficha: Ficha }) {
 
       <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-borde bg-borde lg:grid-cols-4">
         {RESUMEN_CIFRAS.map((clave) => (
-          <div key={clave} className="bg-white p-4">
-            <dt className="text-[13px] font-medium text-tinta-tenue">{etiqueta(clave)}</dt>
-            <dd className="mt-1 font-display text-2xl leading-8 font-semibold tracking-[-0.02em] text-tinta tabular-nums">
+          <div key={clave} className="bg-superficie p-4">
+            <dt className="text-[13px] font-medium text-secundario">{etiqueta(clave)}</dt>
+            <dd className="mt-1 text-2xl leading-8 font-semibold tracking-[-0.01em] text-tinta tabular-nums">
               <ValorResumen clave={clave} ficha={ficha} />
             </dd>
           </div>
@@ -182,7 +192,7 @@ function ResumenObra({ ficha }: { ficha: Ficha }) {
       <dl className="mt-6 grid gap-x-8 gap-y-4 sm:grid-cols-2">
         {RESUMEN_DETALLE.map((clave) => (
           <div key={clave}>
-            <dt className="text-[13px] font-medium text-tinta-tenue">{etiqueta(clave)}</dt>
+            <dt className="text-[13px] font-medium text-secundario">{etiqueta(clave)}</dt>
             <dd className="mt-1 text-[15px] text-tinta">
               <ValorResumen clave={clave} ficha={ficha} />
             </dd>
@@ -193,16 +203,12 @@ function ResumenObra({ ficha }: { ficha: Ficha }) {
   );
 }
 
-function Aviso({ tono, children }: { tono: "completo" | "neutro" | "aviso"; children: ReactNode }) {
-  const estilos = {
-    completo: "border-borde text-tinta-suave",
-    neutro: "border-borde text-tinta-suave",
-    aviso: "border-ambar-borde/70 bg-ambar-claro text-ambar",
-  }[tono];
+function Aviso({ icono, children, piloto = false, destacado = false }: { icono: ReactNode; children: ReactNode; piloto?: boolean; destacado?: boolean }) {
+  const estilos = piloto ? "border-piloto/30 bg-piloto-claro text-piloto" : `bg-superficie text-pizarra ${destacado ? "border-marino/25 shadow-elevacion" : "border-borde"}`;
   return (
-    <div className={`mb-4 flex items-start gap-3 rounded-xl border px-4 py-3 text-[15px] sm:px-5 ${estilos}`}>
-      <Punto tono={tono} className="mt-2" />
-      <p>{children}</p>
+    <div className={`animar-entrada mb-4 flex items-start gap-3 rounded-xl border px-4 py-3 text-[15px] sm:px-5 ${estilos}`}>
+      <span className="flex shrink-0">{icono}</span>
+      <p className="min-w-0 pt-0.5">{children}</p>
     </div>
   );
 }

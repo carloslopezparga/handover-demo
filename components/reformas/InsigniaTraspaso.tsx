@@ -1,7 +1,8 @@
+import { CornerUpLeft } from "lucide-react";
 import type { EstadoTraspaso } from "@/lib/types";
 import { Estado } from "../ui";
 
-/** Estado del traspaso como texto con punto: ladrillo si espera revisión, salvia si se aceptó. */
+/** Estado del traspaso: azul si espera revisión, marino con check si se aceptó, gris si se devolvió. */
 export function InsigniaTraspaso({ estado, className = "" }: { estado: EstadoTraspaso; className?: string }) {
   if (estado === "Aceptado")
     return (
@@ -11,7 +12,7 @@ export function InsigniaTraspaso({ estado, className = "" }: { estado: EstadoTra
     );
   if (estado === "Devuelto a Supply")
     return (
-      <Estado tono="neutro" className={className}>
+      <Estado tono="neutro" className={className} icono={<CornerUpLeft className="size-3.5 shrink-0" aria-hidden />}>
         Devuelto a Supply
       </Estado>
     );

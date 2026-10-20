@@ -2,11 +2,11 @@
 
 // Pinta un campo de la ficha según su tipo y muestra su validación en tiempo real.
 
-import { Check, CircleAlert, CircleCheck } from "lucide-react";
+import { Check, CircleAlert, CornerUpLeft } from "lucide-react";
 import { formatEuros, formatNumero, hoyISO, parseNumero } from "@/lib/format";
 import type { DefinicionCampo, Ficha, RespuestaSiNo, ValorCampo } from "@/lib/types";
 import { textoValor, validarCampo } from "@/lib/validation";
-import { CLASE_INPUT, Estado, MarcaObligatorio } from "../ui";
+import { CLASE_INPUT, claseBoton, Estado, IconoCompleto, MarcaObligatorio } from "../ui";
 import { CampoFotos } from "./CampoFotos";
 
 const TIPOS_GRUPO: DefinicionCampo["tipo"][] = ["siNo", "siNoComentario", "valoracion", "multiSeleccion", "casillas"];
@@ -44,7 +44,7 @@ export function CampoFicha({ def, valor, ficha, onCambio, enEtapaFutura, soloLec
   return (
     <div
       id={`campo-${def.clave}`}
-      className={`-m-2 rounded-lg p-2 transition-colors ${marcado ? "bg-ladrillo-claro/60 ring-1 ring-ladrillo/25" : ""} ${ocupaAnchoCompleto(def) ? "@lg:col-span-2" : ""}`}
+      className={`-m-2 rounded-lg p-2 transition-[background-color,box-shadow] ${marcado ? "ring-2 ring-azul/35" : ""} ${ocupaAnchoCompleto(def) ? "@lg:col-span-2" : ""}`}
     >
       <div className="mb-2 flex min-h-5 flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <Etiqueta htmlFor={Etiqueta === "label" ? idInput : undefined} className="flex items-center text-sm leading-5 font-medium text-tinta">
@@ -62,25 +62,30 @@ export function CampoFicha({ def, valor, ficha, onCambio, enEtapaFutura, soloLec
       )}
 
       {!soloLectura && (mostrarError || def.ayuda) && (
-        <p id={idAyuda} className={`mt-2 flex items-start gap-1.5 text-[13px] leading-5 ${mostrarError ? "font-medium text-ladrillo" : "text-tinta-tenue"}`}>
+        <p id={idAyuda} className={`mt-2 flex items-start gap-1.5 text-[13px] leading-5 ${mostrarError ? "animar-despliegue font-medium text-error" : "text-secundario"}`}>
           {mostrarError && <CircleAlert className="mt-0.5 size-3.5 shrink-0" aria-hidden />}
           {mostrarError ? r.error : def.ayuda}
         </p>
       )}
       {!soloLectura && def.tipo === "moneda" && r.completo && formatNumero(valor as string) !== String(valor).trim() && (
-        <p className="mt-2 text-[13px] text-tinta-tenue tabular-nums">= {formatEuros(valor as string)}</p>
+        <p className="mt-2 text-[13px] text-secundario tabular-nums">= {formatEuros(valor as string)}</p>
       )}
     </div>
   );
 }
 
 function EstadoCampo({ def, completo, devuelto }: { def: DefinicionCampo; completo: boolean; devuelto?: boolean }) {
-  if (devuelto) return <Estado tono="accion">Devuelto por Reformas</Estado>;
-  if (!def.obligatorio) return <span className="text-[12px] text-tinta-tenue">Opcional</span>;
+  if (devuelto)
+    return (
+      <Estado tono="accion" icono={<CornerUpLeft className="size-3.5" aria-hidden />}>
+        Devuelto por Reformas
+      </Estado>
+    );
+  if (!def.obligatorio) return <span className="text-[12px] text-secundario">Opcional</span>;
   if (completo)
     return (
-      <span className="text-salvia" title="Completo">
-        <CircleCheck className="size-4" aria-hidden />
+      <span title="Completo">
+        <IconoCompleto className="size-4" animar />
         <span className="sr-only">Completo</span>
       </span>
     );
@@ -90,7 +95,7 @@ function EstadoCampo({ def, completo, devuelto }: { def: DefinicionCampo; comple
 function ValorSoloLectura({ def, valor }: { def: DefinicionCampo; valor: ValorCampo }) {
   if (def.tipo === "fotos") return <CampoFotos valor={Array.isArray(valor) ? valor : []} onCambio={() => {}} soloLectura id={`input-${def.clave}`} />;
   const texto = textoValor(def, valor);
-  return <p className={`text-[15px] ${texto === "—" ? "text-ladrillo" : "text-tinta"}`}>{texto === "—" ? "Sin dato" : texto}</p>;
+  return <p className={`text-[15px] ${texto === "—" ? "font-medium text-azul" : "text-tinta"}`}>{texto === "—" ? "Sin dato" : texto}</p>;
 }
 
 interface PropsEntrada {
@@ -133,13 +138,13 @@ function Entrada({ def, valor, onCambio, id, invalido, describedBy }: PropsEntra
             className={`${CLASE_INPUT} tabular-nums ${def.unidad ? "pr-12" : ""}`}
             autoComplete="off"
           />
-          {def.unidad && <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-tinta-tenue">{def.unidad}</span>}
+          {def.unidad && <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-secundario">{def.unidad}</span>}
         </div>
       );
 
     case "seleccion":
       return (
-        <select {...comunes} value={texto} onChange={(e) => onCambio(e.target.value)} className={`${CLASE_INPUT} ${texto ? "" : "text-tinta-tenue"}`}>
+        <select {...comunes} value={texto} onChange={(e) => onCambio(e.target.value)} className={`${CLASE_INPUT} ${texto ? "" : "text-secundario"}`}>
           <option value="">Selecciona…</option>
           {def.opciones?.map((o) => (
             <option key={o.valor} value={o.valor}>
@@ -175,7 +180,7 @@ function Entrada({ def, valor, onCambio, id, invalido, describedBy }: PropsEntra
       const n = parseNumero(texto);
       return (
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-          <div role="radiogroup" aria-label={def.etiqueta} className="grid w-full grid-cols-5 rounded-lg border border-borde-fuerte bg-white p-0.5 sm:w-auto sm:min-w-72">
+          <div role="radiogroup" aria-label={def.etiqueta} className="grid w-full grid-cols-5 rounded-lg border border-borde-fuerte bg-superficie p-0.5 shadow-suave sm:w-auto sm:min-w-72">
             {[1, 2, 3, 4, 5].map((i) => (
               <button
                 key={i}
@@ -184,13 +189,13 @@ function Entrada({ def, valor, onCambio, id, invalido, describedBy }: PropsEntra
                 role="radio"
                 aria-checked={n === i}
                 onClick={() => onCambio(i)}
-                className={`${CLASE_SEGMENTO} tabular-nums ${n === i ? "bg-tinta text-crema" : "text-tinta hover:bg-crema"}`}
+                className={`${CLASE_SEGMENTO} tabular-nums ${n === i ? "bg-tinta text-white" : "text-tinta hover:bg-fondo-2"}`}
               >
                 {i}
               </button>
             ))}
           </div>
-          <p className="text-[13px] text-tinta-suave">{n ? ETIQUETAS_VALORACION[n - 1] : "Sin valorar"}</p>
+          <p className="text-[13px] text-secundario">{n ? ETIQUETAS_VALORACION[n - 1] : "Sin valorar"}</p>
         </div>
       );
     }
@@ -199,11 +204,7 @@ function Entrada({ def, valor, onCambio, id, invalido, describedBy }: PropsEntra
       return (
         <div className="flex gap-2">
           <input {...comunes} type="date" value={texto} onChange={(e) => onCambio(e.target.value)} className={`${CLASE_INPUT} tabular-nums`} />
-          <button
-            type="button"
-            onClick={() => onCambio(hoyISO())}
-            className="h-10 shrink-0 rounded-lg border border-borde-fuerte bg-white px-4 text-sm font-semibold text-tinta transition-colors hover:border-[#c2b79f] hover:bg-crema/60"
-          >
+          <button type="button" onClick={() => onCambio(hoyISO())} className={claseBoton("secundario")}>
             Hoy
           </button>
         </div>
@@ -222,11 +223,11 @@ function Entrada({ def, valor, onCambio, id, invalido, describedBy }: PropsEntra
                 type="button"
                 aria-pressed={activo}
                 onClick={() => onCambio(activo ? lista.filter((x) => x !== o.valor) : [...lista, o.valor])}
-                className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium transition-colors duration-150 ${
-                  activo ? "border-tinta bg-tinta text-crema" : "border-borde-fuerte bg-white text-tinta hover:border-[#c2b79f] hover:bg-crema/60"
+                className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.97] ${
+                  activo ? "border-tinta bg-tinta text-white" : "border-borde-fuerte bg-superficie text-tinta shadow-suave hover:border-secundario/50 hover:bg-fondo"
                 }`}
               >
-                {activo && <Check className="size-3.5" strokeWidth={2.5} aria-hidden />}
+                {activo && <Check className="animar-pop size-3.5" aria-hidden />}
                 {o.etiqueta}
               </button>
             );
@@ -262,7 +263,7 @@ function Entrada({ def, valor, onCambio, id, invalido, describedBy }: PropsEntra
 
 function SelectorSiNo({ id, valor, onCambio, etiqueta }: { id: string; valor: string; onCambio: (v: string) => void; etiqueta: string }) {
   return (
-    <div role="radiogroup" aria-label={etiqueta} className="inline-flex rounded-lg border border-borde-fuerte bg-white p-0.5">
+    <div role="radiogroup" aria-label={etiqueta} className="inline-flex rounded-lg border border-borde-fuerte bg-superficie p-0.5 shadow-suave">
       {[
         { v: "si", e: "Sí" },
         { v: "no", e: "No" },
@@ -274,7 +275,7 @@ function SelectorSiNo({ id, valor, onCambio, etiqueta }: { id: string; valor: st
           role="radio"
           aria-checked={valor === o.v}
           onClick={() => onCambio(o.v)}
-          className={`${CLASE_SEGMENTO} min-w-20 ${valor === o.v ? "bg-tinta text-crema" : "text-tinta hover:bg-crema"}`}
+          className={`${CLASE_SEGMENTO} min-w-20 ${valor === o.v ? "bg-tinta text-white" : "text-tinta hover:bg-fondo-2"}`}
         >
           {o.e}
         </button>
