@@ -10,7 +10,7 @@ const bricolage = Bricolage_Grotesque({ subsets: ["latin"], axes: ["opsz"], vari
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Vistral · Supply (prototipo)",
+  title: "Traspaso de viviendas · Supply (prototipo)",
   description: "Prototipo de ficha única de vivienda con campos obligatorios por etapa y traspaso automático a reformas.",
 };
 

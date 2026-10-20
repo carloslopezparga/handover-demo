@@ -43,7 +43,7 @@ Pulsa **Firmar y enviar a reformas**. Aparece la notificación «Traspaso enviad
 
 ### 5. Ver el traspaso en reformas · ~20 s
 
-**Haz:** pulsa **Ver en la bandeja de Reno** en la notificación (o **Reformas · Reno** en la barra lateral). Abre el traspaso nuevo, marcado como **Nuevo** y **Pendiente de revisión**. Enseña el «Resumen para obra» (alcance, coste, m², fotos) y pulsa **Aceptar**.
+**Haz:** pulsa **Ver en la bandeja de Reformas** en la notificación (o **Reformas** en la barra lateral). Abre el traspaso nuevo, marcado como **Nuevo** y **Pendiente de revisión**. Enseña el «Resumen para obra» (alcance, coste, m², fotos) y pulsa **Aceptar**.
 
 **Di:** «Reformas recibe la ficha completa en solo lectura. Si algo falla, puede devolverla a Supply indicando el campo y un comentario, y la vivienda vuelve a Firma con una alerta.» (Opcional: enseña en el Embudo la vivienda de Embajadores, devuelta por «faltan m² útiles».)
 

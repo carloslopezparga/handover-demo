@@ -1,6 +1,6 @@
 "use client";
 
-// PANTALLA 4 · Bandeja de reformas (módulo Reno): lista de traspasos con su estado.
+// PANTALLA 4 · Bandeja de reformas (módulo de Reformas): lista de traspasos con su estado.
 
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -36,7 +36,7 @@ export default function BandejaReformasPage() {
   return (
     <>
       <TituloPagina
-        antetitulo="Reno · Reformas"
+        antetitulo="Reformas"
         titulo="Bandeja de traspasos"
         descripcion="Cada vivienda firmada llega aquí automáticamente con su ficha completa."
       />

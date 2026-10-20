@@ -22,7 +22,7 @@ interface ItemNav {
 
 const NAVEGACION: ItemNav[] = [
   { href: "/", etiqueta: "Embudo", corta: "Embudo", icono: Columns3, activo: (p) => p === "/" || p.startsWith("/vivienda") },
-  { href: "/reformas", etiqueta: "Reformas · Reno", corta: "Reno", icono: Inbox, activo: (p) => p.startsWith("/reformas") },
+  { href: "/reformas", etiqueta: "Reformas", corta: "Reformas", icono: Inbox, activo: (p) => p.startsWith("/reformas") },
   { href: "/metricas", etiqueta: "Métricas", corta: "Métricas", icono: ChartColumn, activo: (p) => p.startsWith("/metricas") },
 ];
 
@@ -116,7 +116,7 @@ function BotonReiniciar({ onClick }: { onClick: () => void }) {
 function Marca() {
   return (
     <Link href="/" className="inline-flex items-baseline gap-2 rounded-md">
-      <span className="font-display text-[21px] leading-none font-semibold tracking-[-0.03em] text-tinta">Vistral</span>
+      <span className="font-display text-[21px] leading-none font-semibold tracking-[-0.03em] text-tinta">Traspaso</span>
       <span className="hidden text-[13px] font-medium text-tinta-tenue sm:inline">Supply</span>
     </Link>
   );
@@ -198,9 +198,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Móvil: cabecera ligera */}
       <header className="sticky top-0 z-40 border-b border-borde bg-crema/90 backdrop-blur-md lg:hidden">
-        <div className="flex h-14 items-center gap-4 pr-2 pl-4">
+        <div className="flex h-14 items-center gap-3 pr-2 pl-4 sm:gap-4">
           <Marca />
-          <nav className="flex min-w-0 flex-1 items-center gap-4 overflow-x-auto" aria-label="Principal">
+          <nav className="flex min-w-0 flex-1 items-center gap-3 overflow-x-auto sm:gap-4" aria-label="Principal">
             {NAVEGACION.map((n) => (
               <EnlaceSuperior key={n.href} item={n} activo={n.activo(pathname)} contador={n.href === "/reformas" ? pendientes : 0} />
             ))}
@@ -264,7 +264,7 @@ function EnlaceSuperior({ item, activo, contador }: { item: ItemNav; activo: boo
     <Link
       href={item.href}
       aria-current={activo ? "page" : undefined}
-      className={`relative flex h-14 shrink-0 items-center gap-1 text-[15px] font-medium transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full ${
+      className={`relative flex h-14 shrink-0 items-center gap-1 text-[14px] font-medium sm:text-[15px] transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full ${
         activo ? "text-tinta after:bg-tinta" : "text-tinta-tenue after:bg-transparent hover:text-tinta"
       }`}
     >
