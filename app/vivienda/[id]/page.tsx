@@ -95,7 +95,7 @@ function FichaVivienda({ vivienda: v }: { vivienda: Vivienda }) {
       notificar({
         titulo: "Traspaso enviado a reformas · aviso enviado al coordinador",
         descripcion: `${r.traspaso.id} · ${v.ficha.direccion as string}`,
-        accion: { etiqueta: "Ver en la bandeja de Reno", href: `/reformas/${r.traspaso.id}` },
+        accion: { etiqueta: "Ver en la bandeja de Reformas", href: `/reformas/${r.traspaso.id}` },
       });
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
@@ -248,7 +248,7 @@ function BannerTraspasada({ traspaso }: { traspaso: Traspaso }) {
         </p>
       </div>
       <BotonEnlace href={`/reformas/${traspaso.id}`} variante="secundario">
-        Ver en Reno
+        Ver en Reformas
       </BotonEnlace>
     </section>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-// Detalle de un traspaso en Reno: ficha completa en solo lectura y acciones Aceptar / Devolver.
+// Detalle de un traspaso en Reformas: ficha completa en solo lectura y acciones Aceptar / Devolver.
 
 import { CornerUpLeft } from "lucide-react";
 import Link from "next/link";

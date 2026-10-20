@@ -1,6 +1,6 @@
 # Cómo funciona (explicado sin tecnicismos)
 
-Este documento es para quien no programa. Explica qué hay en cada carpeta, cómo viajan los datos, dónde se decide qué campos son obligatorios y qué haría falta para usarlo de verdad con una base de datos (Supabase) y con el módulo de reformas (Reno).
+Este documento es para quien no programa. Explica qué hay en cada carpeta, cómo viajan los datos, dónde se decide qué campos son obligatorios y qué haría falta para usarlo de verdad con una base de datos (Supabase) y con el módulo de Reformas.
 
 ## La idea en una frase
 
@@ -21,7 +21,7 @@ public/fotos  Imágenes de ejemplo neutras para las fichas
 | --- | --- |
 | `app/page.tsx` | **Embudo de Supply** (la portada): columnas por etapa con las tarjetas de cada vivienda. |
 | `app/vivienda/[id]/page.tsx` | **Ficha de vivienda**: etapas, campos y botón de avanzar o firmar. |
-| `app/reformas/page.tsx` | **Bandeja de reformas (Reno)**: lista de traspasos. |
+| `app/reformas/page.tsx` | **Bandeja de Reformas**: lista de traspasos. |
 | `app/reformas/[id]/page.tsx` | **Detalle de un traspaso**: ficha en solo lectura y botones Aceptar / Devolver. |
 | `app/metricas/page.tsx` | **Panel de métricas**. |
 | `app/layout.tsx` | El "marco" común de todas las pantallas (barra lateral o cabecera en móvil, notificaciones). |
@@ -59,7 +59,7 @@ public/fotos  Imágenes de ejemplo neutras para las fichas
    (memoria + acciones)                               (sobrevive a recargar)
         │  las pantallas leen de aquí
         ▼
- Embudo · Ficha · Reno · Métricas
+ Embudo · Ficha · Reformas · Métricas
         │  la persona pulsa algo (escribe un campo, «Avanzar», «Firmar», «Aceptar»...)
         ▼
  acción del store  ──►  validation.ts decide si se puede  ──►  se guarda  ──►  todas las pantallas se actualizan
@@ -70,7 +70,7 @@ Ejemplo, al pulsar **Firmar y enviar a reformas**:
 1. El store pregunta a `validation.ts` qué campos obligatorios faltan (de Firma y de las etapas anteriores).
 2. Si falta algo y el modo piloto está apagado, no hace nada (por eso el botón aparece bloqueado y con la lista).
 3. Si está todo (o el modo piloto está encendido), la vivienda pasa a «Traspasada», se apunta en su historial y se crea un **Traspaso** con una copia de la ficha, en estado «Pendiente de revisión».
-4. Aparece la notificación y el traspaso ya está en la bandeja de Reno.
+4. Aparece la notificación y el traspaso ya está en la bandeja de Reformas.
 
 Si Reformas pulsa **Devolver a Supply**, el traspaso queda como «Devuelto a Supply» con el campo y el comentario, y la vivienda vuelve a **Firma** con una alerta roja. No se puede volver a firmar hasta que Supply corrija ese campo (o lo marque como revisado).
 
@@ -113,12 +113,12 @@ Cambios necesarios:
 3. **Fotos**: se suben a Supabase Storage desde el móvil del captador en lugar de pegar URLs.
 4. **Usuarios y permisos**: Supply edita fichas; Reformas solo lee fichas y cambia el estado de los traspasos.
 
-### Conexión con el módulo Reno
+### Conexión con el módulo de Reformas
 
-Al firmar, la base de datos crea una fila en `traspasos`. Un **webhook** (un aviso automático de un sistema a otro) la envía a Reno:
+Al firmar, la base de datos crea una fila en `traspasos`. Un **webhook** (un aviso automático de un sistema a otro) la envía al módulo de Reformas:
 
 ```
-POST https://reno.interno/api/traspasos
+POST https://reformas.interno/api/traspasos
 {
   "traspasoId": "TR-0142",
   "viviendaId": "VIV-1017",
@@ -128,9 +128,9 @@ POST https://reno.interno/api/traspasos
 ```
 
 - Con Supabase se hace con un **Database Webhook** o una **Edge Function** que salta al insertar un traspaso.
-- Reno contesta con su propia llamada cuando acepta o devuelve (`PATCH /traspasos/TR-0142` con estado y motivo), y eso actualiza la vivienda en Supply.
+- El módulo de Reformas contesta con su propia llamada cuando acepta o devuelve (`PATCH /traspasos/TR-0142` con estado y motivo), y eso actualiza la vivienda en Supply.
 - El mismo evento puede **avisar al coordinador** de obra por email o Slack.
-- Detalles para que sea fiable: el id del traspaso evita duplicados si el aviso se repite, y si Reno no responde se reintenta automáticamente.
+- Detalles para que sea fiable: el id del traspaso evita duplicados si el aviso se repite, y si el módulo de Reformas no responde se reintenta automáticamente.
 
 ## Glosario rápido
 

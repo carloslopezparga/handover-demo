@@ -13,7 +13,7 @@ import { buscarCampo, siguienteEstado } from "./stages";
 import { camposPendientes, serializarValor, type CampoPendiente } from "./validation";
 import type { EstadoDemo, EstadoVivienda, EventoHistorial, Traspaso, ValorCampo, Vivienda } from "./types";
 
-const CLAVE_STORAGE = "vistral-supply-demo";
+const CLAVE_STORAGE = "traspaso-viviendas-supply-demo";
 
 export type ResultadoAvance =
   | { ok: false; pendientes: CampoPendiente[] }
@@ -65,7 +65,7 @@ function escribir(datos: EstadoDemo) {
   avisarOyentes();
 }
 
-/** Si la demo está abierta en dos pestañas (Supply y Reno), se mantienen sincronizadas. */
+/** Si la demo está abierta en dos pestañas (Supply y Reformas), se mantienen sincronizadas. */
 function alCambiarOtraPestana(e: StorageEvent) {
   if (e.key !== CLAVE_STORAGE) return;
   const datos = leerGuardado();
