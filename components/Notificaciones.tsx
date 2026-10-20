@@ -22,9 +22,9 @@ interface NotificacionActiva extends Notificacion {
 const Contexto = createContext<((n: Notificacion) => void) | null>(null);
 
 const ICONOS: Record<Tipo, ReactNode> = {
-  exito: <CheckCircle2 className="size-5 text-[#9fc3bf]" aria-hidden />,
-  info: <Info className="size-5 text-crema/80" aria-hidden />,
-  aviso: <TriangleAlert className="size-5 text-ambar-borde" aria-hidden />,
+  exito: <CheckCircle2 className="size-[18px] text-[#9fc3bf]" strokeWidth={2} aria-hidden />,
+  info: <Info className="size-[18px] text-crema/70" strokeWidth={2} aria-hidden />,
+  aviso: <TriangleAlert className="size-[18px] text-ambar-borde" strokeWidth={2} aria-hidden />,
 };
 
 export function NotificacionesProvider({ children }: { children: ReactNode }) {
@@ -47,24 +47,24 @@ export function NotificacionesProvider({ children }: { children: ReactNode }) {
   return (
     <Contexto.Provider value={valor}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 bottom-24 z-[60] flex flex-col items-center gap-2 px-4 lg:bottom-6 lg:items-end lg:px-6" aria-live="polite">
+      <div className="pointer-events-none fixed inset-x-0 bottom-24 z-[60] flex flex-col items-center gap-2 px-4 lg:bottom-6 lg:items-end lg:px-8" aria-live="polite">
         {lista.map((n) => (
           <div
             key={n.id}
             role="status"
-            className="animar-entrada pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-xl bg-tinta px-4 py-3.5 text-crema shadow-elevada"
+            className="animar-entrada pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-xl bg-tinta py-3 pr-2 pl-4 text-crema shadow-elevada"
           >
-            <div className="mt-0.5 shrink-0">{ICONOS[n.tipo ?? "exito"]}</div>
+            <div className="mt-[3px] shrink-0">{ICONOS[n.tipo ?? "exito"]}</div>
             <div className="min-w-0 flex-1">
-              <p className="text-[15px] font-semibold leading-snug">{n.titulo}</p>
-              {n.descripcion && <p className="mt-0.5 text-sm text-crema/75">{n.descripcion}</p>}
+              <p className="text-[15px] leading-6 font-semibold">{n.titulo}</p>
+              {n.descripcion && <p className="text-sm text-crema/70">{n.descripcion}</p>}
               {n.accion && (
-                <Link href={n.accion.href} onClick={() => cerrar(n.id)} className="mt-1.5 inline-block text-sm font-semibold text-[#f3b9a5] underline-offset-2 hover:underline">
+                <Link href={n.accion.href} onClick={() => cerrar(n.id)} className="mt-2 inline-flex items-center gap-1 rounded text-sm font-semibold text-[#f2b8a3] underline decoration-[#f2b8a3]/40 underline-offset-4 transition-colors hover:decoration-[#f2b8a3]">
                   {n.accion.etiqueta}
                 </Link>
               )}
             </div>
-            <button type="button" onClick={() => cerrar(n.id)} className="-mr-1 rounded-md p-1 text-crema/60 hover:bg-white/10 hover:text-crema" aria-label="Cerrar notificación">
+            <button type="button" onClick={() => cerrar(n.id)} className="rounded-lg p-2 text-crema/50 transition-colors hover:bg-white/10 hover:text-crema" aria-label="Cerrar notificación">
               <X className="size-4" />
             </button>
           </div>

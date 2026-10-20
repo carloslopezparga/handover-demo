@@ -24,17 +24,17 @@ public/fotos  Imágenes de ejemplo neutras para las fichas
 | `app/reformas/page.tsx` | **Bandeja de reformas (Reno)**: lista de traspasos. |
 | `app/reformas/[id]/page.tsx` | **Detalle de un traspaso**: ficha en solo lectura y botones Aceptar / Devolver. |
 | `app/metricas/page.tsx` | **Panel de métricas**. |
-| `app/layout.tsx` | El "marco" común de todas las pantallas (cabecera, notificaciones). |
+| `app/layout.tsx` | El "marco" común de todas las pantallas (barra lateral o cabecera en móvil, notificaciones). |
 | `app/not-found.tsx`, `app/error.tsx` | Mensajes amables si una página no existe o algo falla. |
 
 ### `components/` · las piezas
 
-- `AppShell.tsx`: la cabecera «Vistral · Supply (prototipo)», el menú, el interruptor de **Modo piloto** y el botón **Reiniciar demo**.
-- `ui.tsx`: botones, etiquetas, barras de progreso, estados vacíos y de carga. Así todo tiene el mismo aspecto.
+- `AppShell.tsx`: la barra lateral (en móvil, una cabecera ligera) con la marca, el menú, el interruptor de **Modo piloto** y el botón **Reiniciar demo**.
+- `ui.tsx`: botones, estados con punto de color, progreso por segmentos, estados vacíos (con ilustración) y de carga. Así todo tiene el mismo aspecto.
 - `Notificaciones.tsx`: los avisos que aparecen abajo (p. ej. «Traspaso enviado a reformas»).
 - `Dialogo.tsx`: las ventanas emergentes (nueva vivienda, devolver a Supply, reiniciar).
 - `embudo/`: la tarjeta de cada vivienda y el formulario de «Nueva vivienda».
-- `ficha/`: todo lo de la ficha: cada tipo de campo (`CampoFicha.tsx`), las fotos (`CampoFotos.tsx`), la columna de etapas (`PasosEtapas.tsx`), cada bloque de etapa (`SeccionEtapa.tsx`), el panel «Siguiente paso» con la lista de lo que falta (`PanelAvance.tsx`) y el historial.
+- `ficha/`: todo lo de la ficha: cada tipo de campo (`CampoFicha.tsx`), las fotos (`CampoFotos.tsx`), los nodos de la línea de tiempo de etapas (`PasosEtapas.tsx`), cada bloque de etapa (`SeccionEtapa.tsx`), el panel «Siguiente paso» con la lista de lo que falta (`PanelAvance.tsx`) y el historial.
 - `reformas/`: la etiqueta de estado del traspaso, la ficha en solo lectura y la ventana «Devolver a Supply».
 
 ### `lib/` · el cerebro
@@ -83,7 +83,7 @@ Todo está en **`lib/stages.ts`**. Cada campo se describe así:
 ```
 
 - Para que un campo **deje de ser obligatorio**: cambia `obligatorio: true` por `obligatorio: false`.
-- Para **añadir un campo**: añade una línea como esa en la etapa que toque. Aparecerá en la ficha, se validará, contará en la barra de progreso y bloqueará el avance si es obligatorio. No hay que tocar nada más.
+- Para **añadir un campo**: añade una línea como esa en la etapa que toque. Aparecerá en la ficha, se validará, contará en el progreso de la etapa y bloqueará el avance si es obligatorio. No hay que tocar nada más.
 - Para **moverlo de etapa**: cámbialo de lista.
 - Tipos disponibles: texto, texto largo, contacto (exige teléfono o email), número, entero, moneda, porcentaje, selección, sí/no, sí/no con comentario, valoración 1–5, fecha, multiselección, casillas y fotos.
 
@@ -91,7 +91,7 @@ La regla de bloqueo es: **para salir de una etapa, tienen que estar completos lo
 
 ## Modo piloto
 
-Es un interruptor en la cabecera. Encendido, la ficha **avisa en amarillo** de lo que falta pero **deja avanzar**, y apunta en el historial qué campos estaban pendientes. Sirve para introducir la herramienta sin frenar al equipo el primer día y medir cuánto se usa antes de activar el bloqueo real. Por defecto está apagado.
+Es un interruptor en la barra lateral (en móvil, en el menú «⋯» de la cabecera). Encendido, la ficha **avisa en amarillo** de lo que falta pero **deja avanzar**, y apunta en el historial qué campos estaban pendientes. Sirve para introducir la herramienta sin frenar al equipo el primer día y medir cuánto se usa antes de activar el bloqueo real. Por defecto está apagado.
 
 ## Cómo se llevaría a producción
 

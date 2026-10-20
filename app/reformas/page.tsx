@@ -2,11 +2,11 @@
 
 // PANTALLA 4 · Bandeja de reformas (módulo Reno): lista de traspasos con su estado.
 
-import { ChevronRight, Inbox } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { InsigniaTraspaso } from "@/components/reformas/InsigniaTraspaso";
-import { Cargando, EstadoVacio, Insignia, TituloPagina } from "@/components/ui";
+import { Cargando, EstadoVacio, Punto, TituloPagina } from "@/components/ui";
 import { formatEuros, formatFechaHora } from "@/lib/format";
 import { PARTIDAS_REFORMA } from "@/lib/stages";
 import { useStore } from "@/lib/store";
@@ -41,7 +41,7 @@ export default function BandejaReformasPage() {
         descripcion="Cada vivienda firmada llega aquí automáticamente con su ficha completa."
       />
 
-      <div className="mb-4 flex gap-1.5 overflow-x-auto" role="tablist" aria-label="Filtrar por estado">
+      <div className="desplazable mb-6 flex gap-6 overflow-x-auto border-b border-borde" role="tablist" aria-label="Filtrar por estado">
         {FILTROS.map((f) => (
           <button
             key={f.id}
@@ -49,64 +49,63 @@ export default function BandejaReformasPage() {
             role="tab"
             aria-selected={filtro === f.id}
             onClick={() => setFiltro(f.id)}
-            className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-1.5 text-[15px] font-semibold transition-colors ${
-              filtro === f.id ? "border-tinta bg-tinta text-crema" : "border-borde-fuerte bg-papel text-tinta-suave hover:text-tinta"
+            className={`-mb-px inline-flex h-10 shrink-0 items-center gap-2 border-b-2 text-[15px] font-medium transition-colors duration-150 ${
+              filtro === f.id ? "border-tinta text-tinta" : "border-transparent text-tinta-tenue hover:text-tinta"
             }`}
           >
             {f.etiqueta}
-            <span className={`rounded-full px-1.5 text-[13px] ${filtro === f.id ? "bg-white/15" : "bg-crema-oscuro"}`}>{contar(f.id)}</span>
+            <span className="text-[13px] font-medium text-tinta-tenue tabular-nums">{contar(f.id)}</span>
           </button>
         ))}
       </div>
 
       {traspasos.length === 0 ? (
-        <EstadoVacio icono={<Inbox className="size-8" />} titulo="Todavía no hay traspasos" descripcion="Se crean automáticamente cuando Supply firma una vivienda." />
+        <EstadoVacio ilustracion="bandeja" titulo="Todavía no hay traspasos" descripcion="Se crean automáticamente cuando Supply firma una vivienda." />
       ) : visibles.length === 0 ? (
-        <EstadoVacio icono={<Inbox className="size-8" />} titulo="No hay traspasos con este estado" />
+        <EstadoVacio ilustracion="bandeja" titulo="No hay traspasos con este estado" />
       ) : (
-        <ul className="space-y-2.5">
+        <ul className="divide-y divide-borde overflow-hidden rounded-xl border border-borde bg-white">
           {visibles.map((t) => {
             const partidas = Array.isArray(t.ficha.alcanceReforma) ? (t.ficha.alcanceReforma as string[]) : [];
             const nuevo = t.estado === "Pendiente de revisión" && ahora - new Date(t.creadoEn).getTime() < DIEZ_MINUTOS;
             return (
               <li key={t.id}>
-                <Link
-                  href={`/reformas/${t.id}`}
-                  className={`group flex items-center gap-4 rounded-xl border bg-papel p-4 shadow-suave transition hover:border-borde-fuerte hover:shadow-elevada sm:p-5 ${
-                    t.estado === "Pendiente de revisión" ? "border-ambar-borde" : "border-borde"
-                  }`}
-                >
+                <Link href={`/reformas/${t.id}`} className="group flex items-center gap-4 px-4 py-4 transition-colors duration-150 hover:bg-crema/50 sm:gap-6 sm:px-6 sm:py-5">
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                       <InsigniaTraspaso estado={t.estado} />
-                      {nuevo && <Insignia tono="info">Nuevo</Insignia>}
-                      <span className="text-sm font-medium text-tinta-tenue">
+                      {nuevo && <span className="rounded-md border border-tinta/15 px-1.5 text-[12px] leading-5 font-semibold text-tinta">Nuevo</span>}
+                      <span className="text-[13px] text-tinta-tenue tabular-nums">
                         {t.id} · recibido {formatFechaHora(t.creadoEn)}
                       </span>
                     </div>
-                    <p className="mt-1.5 text-[17px] font-semibold text-tinta group-hover:underline group-hover:underline-offset-4">
+                    <p className="mt-2 text-base leading-6 font-semibold text-tinta">
                       {(t.ficha.direccion as string) || "Sin dirección"}
-                      <span className="ml-2 text-[15px] font-normal text-tinta-suave">{(t.ficha.barrio as string) || ""}</span>
+                      {t.ficha.barrio ? <span className="block font-normal text-tinta-tenue sm:ml-2 sm:inline">{t.ficha.barrio as string}</span> : null}
                     </p>
-                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    <p className="mt-1 text-sm text-tinta-suave">
                       {partidas.length > 0 ? (
-                        partidas.map((p) => (
-                          <span key={p} className="rounded-full bg-crema-oscuro px-2.5 py-0.5 text-[13px] font-medium text-tinta-suave">
-                            {PARTIDAS_REFORMA.find((x) => x.valor === p)?.etiqueta ?? p}
-                          </span>
-                        ))
+                        partidas.map((p) => PARTIDAS_REFORMA.find((x) => x.valor === p)?.etiqueta ?? p).join(" · ")
                       ) : (
-                        <span className="text-[13px] font-semibold text-ladrillo">Sin alcance definido</span>
+                        <span className="inline-flex items-center gap-2 font-medium text-ladrillo">
+                          <Punto tono="accion" />
+                          Sin alcance definido
+                        </span>
                       )}
-                      <span className="ml-1 text-[15px] font-semibold text-tinta">{t.ficha.costeReforma ? formatEuros(t.ficha.costeReforma as string) : ""}</span>
-                    </div>
+                    </p>
                     {t.motivoDevolucion && (
-                      <p className="mt-2 text-sm text-ladrillo-oscuro">
-                        <strong className="font-semibold">Motivo:</strong> {t.motivoDevolucion.campoEtiqueta} · {t.motivoDevolucion.comentario}
+                      <p className="mt-2 text-sm text-tinta-suave">
+                        <span className="font-medium text-tinta">Motivo: {t.motivoDevolucion.campoEtiqueta}.</span> {t.motivoDevolucion.comentario}
                       </p>
                     )}
                   </div>
-                  <ChevronRight className="size-5 shrink-0 text-tinta-tenue transition-transform group-hover:translate-x-0.5" aria-hidden />
+                  {t.ficha.costeReforma ? (
+                    <div className="hidden shrink-0 text-right sm:block">
+                      <p className="font-display text-xl leading-7 font-semibold text-tinta tabular-nums">{formatEuros(t.ficha.costeReforma as string)}</p>
+                      <p className="text-[12px] text-tinta-tenue">coste estimado</p>
+                    </div>
+                  ) : null}
+                  <ChevronRight className="size-5 shrink-0 text-tinta-tenue transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-tinta" aria-hidden />
                 </Link>
               </li>
             );

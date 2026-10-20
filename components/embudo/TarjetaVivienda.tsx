@@ -1,9 +1,8 @@
-import { CircleCheck, CornerUpLeft, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { formatEuros, plural } from "@/lib/format";
 import type { Traspaso, Vivienda } from "@/lib/types";
-import { camposPendientes, progresoEtapa } from "@/lib/validation";
-import { BarraProgreso, Insignia } from "../ui";
+import { camposPendientes, devolucionPendiente, progresoEtapa } from "@/lib/validation";
+import { Estado, Segmentos } from "../ui";
 import { InsigniaTraspaso } from "../reformas/InsigniaTraspaso";
 
 export function TarjetaVivienda({ vivienda, traspaso }: { vivienda: Vivienda; traspaso?: Traspaso }) {
@@ -15,15 +14,13 @@ export function TarjetaVivienda({ vivienda, traspaso }: { vivienda: Vivienda; tr
   return (
     <Link
       href={`/vivienda/${vivienda.id}`}
-      className="group block rounded-xl border border-borde bg-papel p-4 shadow-suave transition hover:-translate-y-px hover:border-borde-fuerte hover:shadow-elevada focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+      className="group block rounded-lg border border-borde bg-white p-3 transition-[border-color,box-shadow] duration-150 hover:border-borde-fuerte hover:shadow-suave"
     >
-      <p className="text-[13px] font-medium text-tinta-tenue">{zona || "Sin zona"}</p>
-      <p className="mt-0.5 font-semibold leading-snug text-tinta group-hover:underline group-hover:decoration-borde-fuerte group-hover:underline-offset-4">
-        {(ficha.direccion as string) || "Sin dirección"}
-      </p>
-      <p className="mt-2 text-[15px] text-tinta">
+      <p className="text-[15px] leading-5 font-semibold text-pretty text-tinta">{(ficha.direccion as string) || "Sin dirección"}</p>
+      <p className="mt-1 truncate text-[13px] text-tinta-tenue">{zona || "Sin zona"}</p>
+      <p className="mt-2 text-sm text-tinta tabular-nums">
         <span className="font-semibold">{precio ? formatEuros(precio) : "Sin precio"}</span>
-        <span className="ml-1.5 text-[13px] text-tinta-tenue">{precioAcordado ? "acordado" : "pedido"}</span>
+        <span className="ml-1 text-[13px] text-tinta-tenue">{precioAcordado ? "acordado" : "pedido"}</span>
       </p>
       {vivienda.etapa === "traspasada" ? <PieTraspasada traspaso={traspaso} /> : <PieEnEmbudo vivienda={vivienda} />}
     </Link>
@@ -34,42 +31,35 @@ function PieEnEmbudo({ vivienda }: { vivienda: Vivienda }) {
   if (vivienda.etapa === "traspasada") return null;
   const { completos, total } = progresoEtapa(vivienda, vivienda.etapa);
   const pendientes = camposPendientes(vivienda);
+  const devuelta = vivienda.devolucion && devolucionPendiente(vivienda);
   return (
-    <div className="mt-3 border-t border-borde pt-3">
-      <div className="mb-1.5 flex items-center justify-between text-[13px]">
-        <span className="font-medium text-tinta-suave">
-          {completos} de {total} campos completos
+    <div className="mt-3 space-y-2">
+      <div className="flex items-center gap-2">
+        <Segmentos completos={completos} total={total} listo={pendientes.length === 0} className="flex-1" />
+        <span className="text-[12px] font-medium text-tinta-tenue tabular-nums">
+          {completos}/{total}
         </span>
       </div>
-      <BarraProgreso completos={completos} total={total} />
-      <div className="mt-2.5 flex flex-wrap gap-1.5">
-        {vivienda.devolucion && (
-          <Insignia tono="alerta">
-            <CornerUpLeft className="size-3.5" aria-hidden />
-            Devuelta: {vivienda.devolucion.campoEtiqueta}
-          </Insignia>
-        )}
-        {pendientes.length > 0 ? (
-          <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-ladrillo" title={pendientes.map((p) => p.etiqueta).join(", ")}>
-            <TriangleAlert className="size-3.5" aria-hidden />
-            {pendientes.length === 1 ? "Falta 1 campo" : `Faltan ${plural(pendientes.length, "campo")}`}
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-salvia">
-            <CircleCheck className="size-3.5" aria-hidden />
-            Lista para avanzar
-          </span>
-        )}
-      </div>
+      {devuelta ? (
+        <Estado tono="accion" className="whitespace-normal">
+          Devuelta: {vivienda.devolucion!.campoEtiqueta}
+        </Estado>
+      ) : pendientes.length > 0 ? (
+        <span title={pendientes.map((p) => p.etiqueta).join(", ")} className="block">
+          <Estado tono="accion">{pendientes.length === 1 ? "Falta 1 campo" : `Faltan ${plural(pendientes.length, "campo")}`}</Estado>
+        </span>
+      ) : (
+        <Estado tono="completo">Lista para avanzar</Estado>
+      )}
     </div>
   );
 }
 
 function PieTraspasada({ traspaso }: { traspaso?: Traspaso }) {
   return (
-    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-borde pt-3">
-      <span className="text-[13px] font-medium text-tinta-suave">{traspaso ? traspaso.id : "Sin traspaso"}</span>
-      {traspaso && <InsigniaTraspaso estado={traspaso.estado} />}
+    <div className="mt-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+      {traspaso ? <InsigniaTraspaso estado={traspaso.estado} /> : <span className="text-[13px] text-tinta-tenue">Sin traspaso</span>}
+      {traspaso && <span className="text-[12px] font-medium text-tinta-tenue tabular-nums">{traspaso.id}</span>}
     </div>
   );
 }

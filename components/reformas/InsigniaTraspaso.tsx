@@ -1,26 +1,23 @@
-import { CircleCheck, Clock, CornerUpLeft } from "lucide-react";
 import type { EstadoTraspaso } from "@/lib/types";
-import { Insignia } from "../ui";
+import { Estado } from "../ui";
 
-export function InsigniaTraspaso({ estado }: { estado: EstadoTraspaso }) {
+/** Estado del traspaso como texto con punto: ladrillo si espera revisión, salvia si se aceptó. */
+export function InsigniaTraspaso({ estado, className = "" }: { estado: EstadoTraspaso; className?: string }) {
   if (estado === "Aceptado")
     return (
-      <Insignia tono="exito">
-        <CircleCheck className="size-3.5" aria-hidden />
+      <Estado tono="completo" className={className}>
         Aceptado
-      </Insignia>
+      </Estado>
     );
   if (estado === "Devuelto a Supply")
     return (
-      <Insignia tono="alerta">
-        <CornerUpLeft className="size-3.5" aria-hidden />
+      <Estado tono="neutro" className={className}>
         Devuelto a Supply
-      </Insignia>
+      </Estado>
     );
   return (
-    <Insignia tono="aviso">
-      <Clock className="size-3.5" aria-hidden />
+    <Estado tono="accion" className={className}>
       Pendiente de revisión
-    </Insignia>
+    </Estado>
   );
 }

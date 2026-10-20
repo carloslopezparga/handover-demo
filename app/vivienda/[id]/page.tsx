@@ -1,19 +1,19 @@
 "use client";
 
-// PANTALLA 2 · Ficha de vivienda: etapas a la izquierda, campos en el centro y
-// panel de avance a la derecha (abajo en móvil).
+// PANTALLA 2 · Ficha de vivienda: línea de tiempo de etapas con sus campos a la izquierda
+// y panel «Siguiente paso» a la derecha (arriba en móvil, con barra fija abajo).
 
-import { ArrowLeft, CircleCheck, CornerUpLeft, SearchX, Send } from "lucide-react";
+import { Check, CornerUpLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
-import { BarraAvanceMovil, PanelAvance } from "@/components/ficha/PanelAvance";
-import { estadoPaso, PasosEtapas } from "@/components/ficha/PasosEtapas";
 import { Historial } from "@/components/ficha/Historial";
+import { BarraAvanceMovil, PanelAvance } from "@/components/ficha/PanelAvance";
+import { estadoPaso, NodoFinal } from "@/components/ficha/PasosEtapas";
 import { SeccionEtapa } from "@/components/ficha/SeccionEtapa";
 import { useNotificar } from "@/components/Notificaciones";
 import { InsigniaTraspaso } from "@/components/reformas/InsigniaTraspaso";
-import { BotonEnlace, Cargando, EstadoVacio, Insignia } from "@/components/ui";
+import { Boton, BotonEnlace, Cargando, Estado, EstadoVacio, Migas } from "@/components/ui";
 import { formatFecha, formatFechaHora, plural } from "@/lib/format";
 import { buscarCampo, ETAPAS, indiceEtapa, NOMBRE_ESTADO } from "@/lib/stages";
 import { useStore } from "@/lib/store";
@@ -41,7 +41,7 @@ export default function FichaPage() {
   if (!vivienda) {
     return (
       <EstadoVacio
-        icono={<SearchX className="size-8" />}
+        ilustracion="busqueda"
         titulo="No encontramos esta vivienda"
         descripcion="Puede que se haya reiniciado la demo o que el enlace no sea correcto."
         accion={<BotonEnlace href="/">Volver al embudo</BotonEnlace>}
@@ -75,11 +75,6 @@ function FichaVivienda({ vivienda: v }: { vivienda: Vivienda }) {
         document.getElementById(`input-${clave}`)?.focus({ preventScroll: true });
       }),
     );
-  }, []);
-
-  const irAEtapa = useCallback((etapa: EtapaId) => {
-    setManual((m) => ({ ...m, [etapa]: true }));
-    requestAnimationFrame(() => document.getElementById(`etapa-${etapa}`)?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }, []);
 
   const pendientes = camposPendientes(v);
@@ -123,63 +118,75 @@ function FichaVivienda({ vivienda: v }: { vivienda: Vivienda }) {
 
   return (
     <div className="pb-24 lg:pb-0">
-      <Link href="/" className="mb-4 inline-flex items-center gap-1.5 text-[15px] font-medium text-tinta-suave hover:text-tinta">
-        <ArrowLeft className="size-4" aria-hidden />
-        Embudo
-      </Link>
+      <Migas items={[{ etiqueta: "Embudo", href: "/" }, { etiqueta: v.id }]} />
 
-      <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-tinta sm:text-[28px]">{(v.ficha.direccion as string) || "Sin dirección"}</h1>
-          <p className="mt-1 text-[15px] text-tinta-suave">
-            {zona && `${zona} · `}
-            {v.id} · Alta el {formatFecha(v.creadaEn)}
+      <header className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6 lg:mb-10">
+        <div className="min-w-0">
+          <h1 className="font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.025em] text-balance text-tinta sm:text-[34px]">{(v.ficha.direccion as string) || "Sin dirección"}</h1>
+          <p className="mt-2 text-[15px] text-tinta-suave">
+            {zona && `${zona} · `}Alta el {formatFecha(v.creadaEn)}
           </p>
         </div>
-        <Insignia tono={soloLectura ? "exito" : "info"} className="self-start text-sm">
-          {NOMBRE_ESTADO[v.etapa]}
-        </Insignia>
-      </div>
+        <div className="shrink-0 sm:pt-2">
+          {soloLectura ? (
+            <Estado tono="completo" className="text-sm">
+              Traspasada a reformas
+            </Estado>
+          ) : (
+            <Estado tono="actual" className="text-sm">
+              {NOMBRE_ESTADO[v.etapa]} · etapa {indiceEtapa(v.etapa) + 1} de {ETAPAS.length}
+            </Estado>
+          )}
+        </div>
+      </header>
 
       {v.devolucion && v.etapa === "firma" && (
         <AlertaDevolucion vivienda={v} pendiente={Boolean(campoDevuelto)} onIrCampo={irACampo} onRevisada={() => marcarDevolucionRevisada(v.id)} />
       )}
       {soloLectura && traspaso && <BannerTraspasada traspaso={traspaso} />}
 
-      <div className="mb-5 lg:hidden">
-        <PasosEtapas vivienda={v} onIr={irAEtapa} />
-      </div>
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-12">
+        {!soloLectura && (
+          <aside className="lg:col-start-2 lg:row-start-1" aria-label="Siguiente paso">
+            <div className="lg:sticky lg:top-6">
+              <PanelAvance vivienda={v} pendientes={pendientes} modoPiloto={modoPiloto} onAvanzar={avanzar} onIrCampo={irACampo} />
+            </div>
+          </aside>
+        )}
 
-      <div className="grid gap-6 lg:grid-cols-[210px_minmax(0,1fr)_340px] xl:grid-cols-[230px_minmax(0,1fr)_360px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24">
-            <PasosEtapas vivienda={v} onIr={irAEtapa} />
-          </div>
-        </aside>
+        <div className={`min-w-0 lg:row-start-1 ${soloLectura ? "lg:col-span-2 lg:max-w-4xl" : "lg:col-start-1"}`}>
+          <ol aria-label="Etapas de la vivienda">
+            {ETAPAS.map((etapa, i) => (
+              <SeccionEtapa
+                key={etapa.id}
+                etapa={etapa}
+                numero={i + 1}
+                estado={estadoPaso(v, etapa.id)}
+                vivienda={v}
+                abierta={manual[etapa.id] ?? abiertaPorDefecto(v, etapa.id)}
+                onAlternar={() => setManual((m) => ({ ...m, [etapa.id]: !(m[etapa.id] ?? abiertaPorDefecto(v, etapa.id)) }))}
+                onCambio={(clave, valor) => actualizarCampo(v.id, clave, valor)}
+                soloLectura={soloLectura}
+                campoDevuelto={campoDevuelto}
+                primera={i === 0}
+              />
+            ))}
+            <li className="relative grid grid-cols-[20px_minmax(0,1fr)] gap-x-4">
+              <span className="absolute top-0 left-[9.5px] h-6 w-px bg-borde" aria-hidden />
+              <div className="pt-[14px]">
+                <NodoFinal traspasada={soloLectura} />
+              </div>
+              <div className="py-3">
+                <p className={`font-display text-lg leading-6 font-semibold tracking-[-0.01em] ${soloLectura ? "text-tinta" : "text-tinta-suave"}`}>Reformas</p>
+                <p className="mt-0.5 text-sm text-tinta-tenue">{soloLectura ? `Traspasada${traspaso ? ` · ${traspaso.id}` : ""}` : "El traspaso se envía solo al firmar"}</p>
+              </div>
+            </li>
+          </ol>
 
-        <div className="min-w-0 space-y-4">
-          {ETAPAS.map((etapa, i) => (
-            <SeccionEtapa
-              key={etapa.id}
-              etapa={etapa}
-              numero={i + 1}
-              estado={estadoPaso(v, etapa.id)}
-              vivienda={v}
-              abierta={manual[etapa.id] ?? abiertaPorDefecto(v, etapa.id)}
-              onAlternar={() => setManual((m) => ({ ...m, [etapa.id]: !(m[etapa.id] ?? abiertaPorDefecto(v, etapa.id)) }))}
-              onCambio={(clave, valor) => actualizarCampo(v.id, clave, valor)}
-              soloLectura={soloLectura}
-              campoDevuelto={campoDevuelto}
-            />
-          ))}
-        </div>
-
-        <aside className="space-y-4">
-          <div className="space-y-4 lg:sticky lg:top-24">
-            <PanelAvance vivienda={v} pendientes={pendientes} modoPiloto={modoPiloto} onAvanzar={avanzar} onIrCampo={irACampo} />
+          <div className="mt-10 lg:pl-9">
             <Historial eventos={v.historial} />
           </div>
-        </aside>
+        </div>
       </div>
 
       <BarraAvanceMovil vivienda={v} pendientes={pendientes} modoPiloto={modoPiloto} onAvanzar={avanzar} />
@@ -192,60 +199,57 @@ function AlertaDevolucion({ vivienda, pendiente, onIrCampo, onRevisada }: { vivi
   const existeCampo = Boolean(buscarCampo(d.campo));
   if (!pendiente) {
     return (
-      <div className="mb-5 flex items-start gap-3 rounded-2xl border border-salvia/30 bg-salvia-claro px-4 py-3.5 text-salvia-oscuro sm:px-5" role="status">
-        <CircleCheck className="mt-0.5 size-5 shrink-0" aria-hidden />
-        <p className="text-[15px]">
-          <strong className="font-semibold">Corrección hecha:</strong> «{d.campoEtiqueta}» ya está revisado. Cuando la ficha esté completa, vuelve a firmar para enviar un nuevo traspaso.
+      <div className="mb-8 flex items-start gap-3 rounded-xl border border-borde px-4 py-3 sm:px-5" role="status">
+        <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-salvia text-white" aria-hidden>
+          <Check className="size-3" strokeWidth={3} />
+        </span>
+        <p className="text-[15px] text-tinta-suave">
+          <strong className="font-semibold text-salvia">Corrección hecha:</strong> «{d.campoEtiqueta}» ya está revisado. Cuando la ficha esté completa, vuelve a firmar para enviar un nuevo traspaso.
         </p>
       </div>
     );
   }
   return (
-    <div className="mb-5 rounded-2xl border-2 border-ladrillo bg-ladrillo-claro px-4 py-4 sm:px-5" role="alert">
-      <div className="flex items-start gap-3">
-        <CornerUpLeft className="mt-0.5 size-5 shrink-0 text-ladrillo" aria-hidden />
-        <div className="min-w-0 flex-1">
-          <p className="font-bold text-ladrillo-oscuro">
-            Devuelta por Reformas · {d.campoEtiqueta}
-            <span className="ml-2 text-sm font-medium text-ladrillo-oscuro/70">{formatFechaHora(d.fecha)}</span>
-          </p>
-          <p className="mt-1 text-[15px] text-tinta">«{d.comentario}»</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {existeCampo && (
-              <button type="button" onClick={() => onIrCampo(d.campo)} className="rounded-lg bg-ladrillo px-3.5 py-2 text-[15px] font-semibold text-white hover:bg-ladrillo-oscuro">
-                Ir al campo
-              </button>
-            )}
-            <button type="button" onClick={onRevisada} className="rounded-lg border border-ladrillo/40 bg-papel px-3.5 py-2 text-[15px] font-semibold text-ladrillo-oscuro hover:bg-white">
-              Marcar como revisado
-            </button>
-            <Link href={`/reformas/${d.traspasoId}`} className="rounded-lg px-3 py-2 text-[15px] font-medium text-ladrillo-oscuro underline-offset-2 hover:underline">
-              Ver traspaso {d.traspasoId}
-            </Link>
-          </div>
-        </div>
+    <section className="mb-8 rounded-xl border border-ladrillo/25 bg-ladrillo-claro/50 p-4 sm:p-6" role="alert">
+      <p className="flex flex-wrap items-center gap-x-2 text-[13px] font-medium text-ladrillo">
+        <CornerUpLeft className="size-3.5" strokeWidth={2.25} aria-hidden />
+        Devuelta por Reformas
+        <span className="font-normal text-tinta-tenue tabular-nums">· {formatFechaHora(d.fecha)}</span>
+      </p>
+      <p className="mt-2 font-display text-xl leading-7 font-semibold tracking-[-0.01em] text-tinta">{d.campoEtiqueta}</p>
+      <p className="mt-1 max-w-3xl text-[15px] text-tinta-suave">«{d.comentario}»</p>
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        {existeCampo && (
+          <Boton variante="accion" tamano="sm" onClick={() => onIrCampo(d.campo)}>
+            Ir al campo
+          </Boton>
+        )}
+        <Boton variante="secundario" tamano="sm" onClick={onRevisada}>
+          Marcar como revisado
+        </Boton>
+        <Link href={`/reformas/${d.traspasoId}`} className="rounded text-sm font-medium sm:ml-2 text-tinta-suave underline decoration-tinta/20 underline-offset-4 transition-colors hover:text-tinta hover:decoration-tinta/50">
+          Ver traspaso {d.traspasoId}
+        </Link>
       </div>
-    </div>
+    </section>
   );
 }
 
 function BannerTraspasada({ traspaso }: { traspaso: Traspaso }) {
   return (
-    <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-salvia/30 bg-salvia-claro px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-      <div className="flex items-start gap-3">
-        <Send className="mt-0.5 size-5 shrink-0 text-salvia" aria-hidden />
-        <div>
-          <p className="flex flex-wrap items-center gap-2 font-bold text-salvia-oscuro">
-            Traspasada a reformas · {traspaso.id} <InsigniaTraspaso estado={traspaso.estado} />
-          </p>
-          <p className="mt-0.5 text-[15px] text-tinta-suave">
-            Enviada el {formatFechaHora(traspaso.creadoEn)}. La ficha queda en solo lectura: Reformas trabaja con la copia enviada.
-          </p>
-        </div>
+    <section className="mb-8 flex flex-col gap-4 rounded-xl border border-borde p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+      <div className="min-w-0">
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="font-display text-lg leading-6 font-semibold tracking-[-0.01em] text-tinta">Traspaso {traspaso.id}</span>
+          <InsigniaTraspaso estado={traspaso.estado} />
+        </p>
+        <p className="mt-1 text-[15px] text-tinta-suave">
+          Enviado el {formatFechaHora(traspaso.creadoEn)}. La ficha queda en solo lectura: Reformas trabaja con la copia enviada.
+        </p>
       </div>
-      <BotonEnlace href={`/reformas/${traspaso.id}`} variante="exito" className="shrink-0">
+      <BotonEnlace href={`/reformas/${traspaso.id}`} variante="secundario">
         Ver en Reno
       </BotonEnlace>
-    </div>
+    </section>
   );
 }

@@ -11,7 +11,7 @@ Prototipo funcional de una **ficha de vivienda única** para el equipo de Supply
 | Pantalla | Ruta | Para qué sirve |
 | --- | --- | --- |
 | Embudo de Supply | `/` | Kanban con una columna por etapa (más «Traspasadas»), progreso de cada ficha y aviso si faltan campos. Botón «Nueva vivienda». |
-| Ficha de vivienda | `/vivienda/[id]` | Etapas a la izquierda, campos validados en tiempo real en el centro y botón «Avanzar a…» / «Firmar y enviar a reformas» con la lista exacta de lo que falta. |
+| Ficha de vivienda | `/vivienda/[id]` | Línea de tiempo de etapas con sus campos validados en tiempo real y, a la derecha, el panel «Siguiente paso» con el botón «Avanzar a…» / «Firmar y enviar a reformas» con la lista exacta de lo que falta. |
 | Bandeja de reformas (Reno) | `/reformas` | Traspasos con su estado: pendiente de revisión, aceptado o devuelto a Supply. |
 | Detalle del traspaso | `/reformas/[id]` | Ficha completa en solo lectura (fotos y alcance incluidos). Acciones «Aceptar» y «Devolver a Supply». |
 | Panel de métricas | `/metricas` | % de traspasos completos a la primera, devoluciones y motivos, viviendas por etapa, % de fichas completas y tiempo firma → traspaso. |
