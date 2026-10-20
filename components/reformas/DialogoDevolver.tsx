@@ -7,7 +7,7 @@ import { ETAPAS } from "@/lib/stages";
 import type { Traspaso } from "@/lib/types";
 import { validarCampo } from "@/lib/validation";
 import { Dialogo } from "../Dialogo";
-import { Boton, CLASE_INPUT } from "../ui";
+import { Boton, CLASE_ETIQUETA, CLASE_INPUT, MarcaObligatorio } from "../ui";
 
 /** Primer campo obligatorio incompleto de la copia, para proponerlo por defecto. */
 function campoSugerido(t: Traspaso): string {
@@ -55,10 +55,11 @@ export function DialogoDevolver({ traspaso, abierto, onCerrar, onDevolver }: Pro
         </>
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div>
-          <label htmlFor="dev-campo" className="mb-1.5 block text-[15px] font-semibold text-tinta">
-            ¿Qué campo falta o está mal? <span className="text-ladrillo">*</span>
+          <label htmlFor="dev-campo" className={CLASE_ETIQUETA}>
+            ¿Qué campo falta o está mal?
+            <MarcaObligatorio pendiente={!campoValido} />
           </label>
           <select id="dev-campo" value={campo} onChange={(e) => setCampo(e.target.value)} className={CLASE_INPUT} aria-invalid={intentado && !campoValido}>
             <option value="">Selecciona un campo…</option>
@@ -75,11 +76,12 @@ export function DialogoDevolver({ traspaso, abierto, onCerrar, onDevolver }: Pro
               <option value="otro">Otro motivo</option>
             </optgroup>
           </select>
-          {intentado && !campoValido && <p className="mt-1.5 text-sm font-medium text-ladrillo">Elige el campo afectado.</p>}
+          {intentado && !campoValido && <p className="mt-2 text-[13px] font-medium text-ladrillo">Elige el campo afectado.</p>}
         </div>
         <div>
-          <label htmlFor="dev-comentario" className="mb-1.5 block text-[15px] font-semibold text-tinta">
-            Comentario para Supply <span className="text-ladrillo">*</span>
+          <label htmlFor="dev-comentario" className={CLASE_ETIQUETA}>
+            Comentario para Supply
+            <MarcaObligatorio pendiente={!comentarioValido} />
           </label>
           <textarea
             id="dev-comentario"
@@ -90,7 +92,7 @@ export function DialogoDevolver({ traspaso, abierto, onCerrar, onDevolver }: Pro
             className={CLASE_INPUT}
             aria-invalid={intentado && !comentarioValido}
           />
-          {intentado && !comentarioValido && <p className="mt-1.5 text-sm font-medium text-ladrillo">Explica brevemente el motivo (mínimo 5 caracteres).</p>}
+          {intentado && !comentarioValido && <p className="mt-2 text-[13px] font-medium text-ladrillo">Explica brevemente el motivo (mínimo 5 caracteres).</p>}
         </div>
       </div>
     </Dialogo>

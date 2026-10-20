@@ -5,7 +5,7 @@ import { useState, type FormEvent } from "react";
 import { useStore } from "@/lib/store";
 import { Dialogo } from "../Dialogo";
 import { useNotificar } from "../Notificaciones";
-import { Boton, CLASE_INPUT } from "../ui";
+import { Boton, CLASE_ETIQUETA, CLASE_INPUT, MarcaObligatorio } from "../ui";
 
 export function DialogoNuevaVivienda({ abierto, onCerrar }: { abierto: boolean; onCerrar: () => void }) {
   const { crearVivienda } = useStore();
@@ -53,10 +53,11 @@ export function DialogoNuevaVivienda({ abierto, onCerrar }: { abierto: boolean; 
         </>
       }
     >
-      <form id="form-nueva-vivienda" onSubmit={enviar} className="space-y-4" noValidate>
+      <form id="form-nueva-vivienda" onSubmit={enviar} className="space-y-6" noValidate>
         <div>
-          <label htmlFor="nv-direccion" className="mb-1.5 block text-[15px] font-semibold text-tinta">
-            Dirección <span className="text-ladrillo">*</span>
+          <label htmlFor="nv-direccion" className={CLASE_ETIQUETA}>
+            Dirección
+            <MarcaObligatorio pendiente={!direccionValida} />
           </label>
           <input
             id="nv-direccion"
@@ -69,20 +70,20 @@ export function DialogoNuevaVivienda({ abierto, onCerrar }: { abierto: boolean; 
             autoComplete="off"
           />
           {intentado && !direccionValida && (
-            <p id="nv-direccion-error" className="mt-1.5 text-sm font-medium text-ladrillo">
+            <p id="nv-direccion-error" className="mt-2 text-[13px] font-medium text-ladrillo">
               Escribe una dirección (mínimo 5 caracteres).
             </p>
           )}
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="nv-barrio" className="mb-1.5 block text-[15px] font-semibold text-tinta">
+            <label htmlFor="nv-barrio" className={CLASE_ETIQUETA}>
               Barrio
             </label>
             <input id="nv-barrio" value={barrio} onChange={(e) => setBarrio(e.target.value)} placeholder="Ej.: Tetuán" className={CLASE_INPUT} autoComplete="off" />
           </div>
           <div>
-            <label htmlFor="nv-ciudad" className="mb-1.5 block text-[15px] font-semibold text-tinta">
+            <label htmlFor="nv-ciudad" className={CLASE_ETIQUETA}>
               Ciudad
             </label>
             <input id="nv-ciudad" value={ciudad} onChange={(e) => setCiudad(e.target.value)} className={CLASE_INPUT} autoComplete="off" />

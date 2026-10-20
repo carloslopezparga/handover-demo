@@ -1,8 +1,13 @@
 import type { Metadata, Viewport } from "next";
+import { Bricolage_Grotesque, Inter } from "next/font/google";
 import { AppShell } from "@/components/AppShell";
 import { NotificacionesProvider } from "@/components/Notificaciones";
 import { StoreProvider } from "@/lib/store";
 import "./globals.css";
+
+// Bricolage Grotesque para títulos y cifras; Inter para el texto.
+const bricolage = Bricolage_Grotesque({ subsets: ["latin"], axes: ["opsz"], variable: "--font-bricolage", display: "swap" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
   title: "Vistral · Supply (prototipo)",
@@ -12,12 +17,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#10292A",
+  themeColor: "#F5F1E8",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es">
+    <html lang="es" className={`${bricolage.variable} ${inter.variable}`}>
       <body>
         <StoreProvider>
           <NotificacionesProvider>

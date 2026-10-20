@@ -2,24 +2,25 @@
 
 // Detalle de un traspaso en Reno: ficha completa en solo lectura y acciones Aceptar / Devolver.
 
-import { ArrowLeft, CircleCheck, CornerUpLeft, SearchX, TriangleAlert } from "lucide-react";
+import { CornerUpLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useNotificar } from "@/components/Notificaciones";
 import { DialogoDevolver } from "@/components/reformas/DialogoDevolver";
 import { FichaSoloLectura } from "@/components/reformas/FichaSoloLectura";
 import { InsigniaTraspaso } from "@/components/reformas/InsigniaTraspaso";
 import { CampoFotos } from "@/components/ficha/CampoFotos";
-import { Boton, BotonEnlace, Cargando, EstadoVacio } from "@/components/ui";
+import { Boton, BotonEnlace, Cargando, EstadoVacio, Migas, Punto, TituloSeccion } from "@/components/ui";
 import { formatDuracion, formatFechaHora } from "@/lib/format";
 import { buscarCampo } from "@/lib/stages";
 import { useStore } from "@/lib/store";
 import type { Ficha, Traspaso } from "@/lib/types";
 import { textoValor } from "@/lib/validation";
 
-/** Datos clave para el equipo de obra, en el orden en que los necesita. */
-const RESUMEN_OBRA = ["alcanceReforma", "costeReforma", "m2Utiles", "m2Construidos", "estadoVivienda", "estadoInstalaciones", "accesoLlaves", "contactoObra", "fechaFirma"];
+/** Datos clave para el equipo de obra, en el orden en que los necesita: alcance, cifras y logística. */
+const RESUMEN_CIFRAS = ["costeReforma", "m2Utiles", "m2Construidos", "estadoVivienda"];
+const RESUMEN_DETALLE = ["estadoInstalaciones", "accesoLlaves", "contactoObra", "fechaFirma"];
 
 export default function DetalleTraspasoPage() {
   const { id } = useParams<{ id: string }>();
@@ -30,7 +31,7 @@ export default function DetalleTraspasoPage() {
   if (!traspaso) {
     return (
       <EstadoVacio
-        icono={<SearchX className="size-8" />}
+        ilustracion="busqueda"
         titulo="No encontramos este traspaso"
         descripcion="Puede que se haya reiniciado la demo o que el enlace no sea correcto."
         accion={<BotonEnlace href="/reformas">Volver a la bandeja</BotonEnlace>}
@@ -49,70 +50,67 @@ function DetalleTraspaso({ traspaso: t }: { traspaso: Traspaso }) {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <Link href="/reformas" className="mb-4 inline-flex items-center gap-1.5 text-[15px] font-medium text-tinta-suave hover:text-tinta">
-        <ArrowLeft className="size-4" aria-hidden />
-        Bandeja de reformas
-      </Link>
+      <Migas items={[{ etiqueta: "Reformas", href: "/reformas" }, { etiqueta: t.id }]} />
 
-      <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div>
-          <p className="mb-1 flex flex-wrap items-center gap-2 text-[13px] font-semibold uppercase tracking-wider text-tinta-tenue">
-            Traspaso {t.id} <InsigniaTraspaso estado={t.estado} />
-          </p>
-          <h1 className="text-2xl font-bold tracking-tight text-tinta sm:text-[28px]">{(t.ficha.direccion as string) || "Sin dirección"}</h1>
-          <p className="mt-1 text-[15px] text-tinta-suave">
+      <header className="mb-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-10">
+        <div className="min-w-0">
+          <InsigniaTraspaso estado={t.estado} className="text-sm" />
+          <h1 className="mt-3 font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.025em] text-balance text-tinta sm:text-[34px]">
+            {(t.ficha.direccion as string) || "Sin dirección"}
+          </h1>
+          <p className="mt-2 text-[15px] text-tinta-suave">
             {[t.ficha.barrio, t.ficha.ciudad].filter(Boolean).join(", ")} · Recibido {formatFechaHora(t.creadoEn)} (
             {formatDuracion(new Date(t.creadoEn).getTime() - new Date(t.firmadoEn).getTime()).toLowerCase()} tras la firma) ·{" "}
-            <Link href={`/vivienda/${t.viviendaId}`} className="font-medium text-tinta underline decoration-borde-fuerte underline-offset-2 hover:decoration-tinta">
+            <Link href={`/vivienda/${t.viviendaId}`} className="rounded font-medium text-tinta underline decoration-tinta/25 underline-offset-4 transition-colors hover:decoration-tinta">
               Ver ficha en Supply
             </Link>
           </p>
         </div>
         {pendiente && (
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-            <Boton variante="peligro" onClick={() => setDevolviendo(true)}>
+            <Boton variante="secundario" onClick={() => setDevolviendo(true)}>
               <CornerUpLeft className="size-4" aria-hidden />
               Devolver a Supply
             </Boton>
             <Boton
-              variante="exito"
               onClick={() => {
                 aceptarTraspaso(t.id);
                 notificar({ titulo: "Traspaso aceptado", descripcion: "Supply recibe la confirmación. La obra puede planificarse." });
               }}
             >
-              <CircleCheck className="size-4" aria-hidden />
               Aceptar
             </Boton>
           </div>
         )}
-      </div>
+      </header>
 
       {t.estado === "Aceptado" && (
-        <Aviso tono="exito" icono={<CircleCheck className="mt-0.5 size-5 shrink-0" aria-hidden />}>
-          <strong className="font-semibold">Aceptado</strong> el {formatFechaHora(t.revisadoEn)}. La ficha llegó completa.
+        <Aviso tono="completo">
+          <strong className="font-semibold text-tinta">Aceptado</strong> el {formatFechaHora(t.revisadoEn)}. La ficha llegó completa.
         </Aviso>
       )}
       {t.estado === "Devuelto a Supply" && t.motivoDevolucion && (
-        <Aviso tono="alerta" icono={<CornerUpLeft className="mt-0.5 size-5 shrink-0" aria-hidden />}>
-          <strong className="font-semibold">Devuelto a Supply</strong> el {formatFechaHora(t.revisadoEn)} · Campo: {t.motivoDevolucion.campoEtiqueta}
-          <span className="mt-0.5 block">«{t.motivoDevolucion.comentario}»</span>
+        <Aviso tono="neutro">
+          <strong className="font-semibold text-tinta">Devuelto a Supply</strong> el {formatFechaHora(t.revisadoEn)} · Campo: {t.motivoDevolucion.campoEtiqueta}
+          <span className="mt-1 block">«{t.motivoDevolucion.comentario}»</span>
         </Aviso>
       )}
       {t.camposPendientes && t.camposPendientes.length > 0 && (
-        <Aviso tono="aviso" icono={<TriangleAlert className="mt-0.5 size-5 shrink-0" aria-hidden />}>
+        <Aviso tono="aviso">
           <strong className="font-semibold">Firmado en modo piloto con campos pendientes:</strong> {t.camposPendientes.join(", ")}.
         </Aviso>
       )}
 
-      <section className="mb-6 rounded-2xl border border-borde bg-papel p-5 shadow-suave sm:p-6">
-        <h2 className="mb-4 text-lg font-bold text-tinta">Resumen para obra</h2>
+      <section className="mb-10 rounded-xl border border-borde bg-white p-6 sm:p-8">
+        <TituloSeccion>Resumen para obra</TituloSeccion>
         <ResumenObra ficha={t.ficha} />
-        <h3 className="mt-6 mb-2.5 text-[15px] font-semibold text-tinta-suave">Fotos ({fotos.length})</h3>
+        <h3 className="mt-8 mb-3 text-sm font-medium text-tinta">
+          Fotos <span className="font-normal text-tinta-tenue tabular-nums">· {fotos.length}</span>
+        </h3>
         <CampoFotos id="fotos-traspaso" valor={fotos} onCambio={() => {}} soloLectura />
       </section>
 
-      <h2 className="mb-3 text-lg font-bold text-tinta">Ficha completa en el momento de la firma</h2>
+      <TituloSeccion detalle="Copia congelada: no cambia aunque Supply edite después la vivienda.">Ficha completa en el momento de la firma</TituloSeccion>
       <FichaSoloLectura ficha={t.ficha} resaltar={t.motivoDevolucion?.campo} fotosEnResumen />
 
       {pendiente && (
@@ -136,51 +134,74 @@ function DetalleTraspaso({ traspaso: t }: { traspaso: Traspaso }) {
   );
 }
 
+/** Valor de un campo para el resumen, o «Sin dato» marcado si falta. */
+function ValorResumen({ clave, ficha, children }: { clave: string; ficha: Ficha; children?: (texto: string) => ReactNode }) {
+  const def = buscarCampo(clave)?.campo;
+  if (!def) return null;
+  const valor = ficha[clave] ?? null;
+  const texto = textoValor(def, valor);
+  const vacio = texto === "—" || (Array.isArray(valor) && valor.length === 0);
+  if (vacio)
+    return (
+      <span className="inline-flex items-center gap-2 text-[15px] font-medium text-ladrillo">
+        <Punto tono="accion" />
+        Sin dato
+      </span>
+    );
+  return <>{children ? children(texto) : texto}</>;
+}
+
 function ResumenObra({ ficha }: { ficha: Ficha }) {
+  const etiqueta = (clave: string) => buscarCampo(clave)?.campo.etiqueta ?? clave;
+  const partidas = buscarCampo("alcanceReforma")?.campo;
+  const alcance = Array.isArray(ficha.alcanceReforma) ? (ficha.alcanceReforma as string[]) : [];
   return (
-    <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
-      {RESUMEN_OBRA.map((clave) => {
-        const def = buscarCampo(clave)?.campo;
-        if (!def) return null;
-        const valor = ficha[clave] ?? null;
-        const vacio = textoValor(def, valor) === "—" || (Array.isArray(valor) && valor.length === 0);
-        return (
-          <div key={clave} className={def.tipo === "multiSeleccion" ? "sm:col-span-2 lg:col-span-3" : ""}>
-            <dt className="text-sm font-medium text-tinta-suave">{def.etiqueta}</dt>
-            <dd className="mt-1 text-[15px] font-semibold text-tinta">
-              {vacio ? (
-                <span className="inline-flex items-center gap-1.5 text-ladrillo">
-                  <TriangleAlert className="size-4" aria-hidden />
-                  Sin dato
-                </span>
-              ) : def.tipo === "multiSeleccion" && Array.isArray(valor) ? (
-                <span className="flex flex-wrap gap-1.5">
-                  {valor.map((v) => (
-                    <span key={v} className="rounded-full bg-salvia px-3 py-1 text-sm font-semibold text-white">
-                      {def.opciones?.find((o) => o.valor === v)?.etiqueta ?? v}
-                    </span>
-                  ))}
-                </span>
-              ) : (
-                textoValor(def, valor)
-              )}
+    <div>
+      <dl>
+        <dt className="text-[13px] font-medium text-tinta-tenue">{etiqueta("alcanceReforma")}</dt>
+        <dd className="mt-1 text-lg leading-7 font-medium text-tinta">
+          {alcance.length > 0 ? (
+            alcance.map((v) => partidas?.opciones?.find((o) => o.valor === v)?.etiqueta ?? v).join(" · ")
+          ) : (
+            <ValorResumen clave="alcanceReforma" ficha={ficha} />
+          )}
+        </dd>
+      </dl>
+
+      <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-borde bg-borde lg:grid-cols-4">
+        {RESUMEN_CIFRAS.map((clave) => (
+          <div key={clave} className="bg-white p-4">
+            <dt className="text-[13px] font-medium text-tinta-tenue">{etiqueta(clave)}</dt>
+            <dd className="mt-1 font-display text-2xl leading-8 font-semibold tracking-[-0.02em] text-tinta tabular-nums">
+              <ValorResumen clave={clave} ficha={ficha} />
             </dd>
           </div>
-        );
-      })}
-    </dl>
+        ))}
+      </dl>
+
+      <dl className="mt-6 grid gap-x-8 gap-y-4 sm:grid-cols-2">
+        {RESUMEN_DETALLE.map((clave) => (
+          <div key={clave}>
+            <dt className="text-[13px] font-medium text-tinta-tenue">{etiqueta(clave)}</dt>
+            <dd className="mt-1 text-[15px] text-tinta">
+              <ValorResumen clave={clave} ficha={ficha} />
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }
 
-function Aviso({ tono, icono, children }: { tono: "exito" | "alerta" | "aviso"; icono: React.ReactNode; children: React.ReactNode }) {
+function Aviso({ tono, children }: { tono: "completo" | "neutro" | "aviso"; children: ReactNode }) {
   const estilos = {
-    exito: "border-salvia/30 bg-salvia-claro text-salvia-oscuro",
-    alerta: "border-ladrillo/40 bg-ladrillo-claro text-ladrillo-oscuro",
-    aviso: "border-ambar-borde bg-ambar-claro text-ambar",
+    completo: "border-borde text-tinta-suave",
+    neutro: "border-borde text-tinta-suave",
+    aviso: "border-ambar-borde/70 bg-ambar-claro text-ambar",
   }[tono];
   return (
-    <div className={`mb-4 flex items-start gap-3 rounded-2xl border px-4 py-3.5 text-[15px] sm:px-5 ${estilos}`}>
-      {icono}
+    <div className={`mb-4 flex items-start gap-3 rounded-xl border px-4 py-3 text-[15px] sm:px-5 ${estilos}`}>
+      <Punto tono={tono} className="mt-2" />
       <p>{children}</p>
     </div>
   );

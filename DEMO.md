@@ -5,20 +5,20 @@
 ## Antes de la llamada (30 segundos)
 
 - Abre la app desplegada (o `npm run dev`) en una ventana a pantalla completa.
-- Pulsa **Reiniciar demo** (arriba a la derecha) para partir de los datos de ejemplo. El **Modo piloto** debe quedar desactivado.
+- Pulsa **Reiniciar demo** (abajo en la barra lateral; en móvil, en el menú «⋯» de la cabecera) para partir de los datos de ejemplo. El **Modo piloto** debe quedar desactivado.
 - Si compartes pantalla en un monitor grande, sube el zoom del navegador al 110–125 %.
 
 ## Los 6 pasos
 
 ### 1. Abrir la vivienda en Oferta · ~15 s
 
-**Haz:** en el **Embudo**, señala la columna **Oferta**. La primera tarjeta es **Calle de Bravo Murillo 241, 5º D** (Tetuán): barra en rojo, «2 de 4 campos completos» y aviso «Faltan 2 campos». Haz clic en ella.
+**Haz:** en el **Embudo**, señala la columna **Oferta**. La primera tarjeta es **Calle de Bravo Murillo 241, 5º D** (Tetuán): progreso «2/4» (un trazo por campo obligatorio) y aviso «Faltan 2 campos». Haz clic en ella.
 
 **Di:** «Este es el embudo de Supply. Cada tarjeta enseña qué parte de su ficha está completa. Esta vivienda está en Oferta y tiene datos pendientes.»
 
 ### 2. Ver que no deja avanzar y qué falta · ~20 s
 
-**Haz:** en la ficha, señala a la izquierda las etapas (completadas, en curso, bloqueadas) y a la derecha el botón **Avanzar a Firma** deshabilitado con la lista «Para avanzar falta»: *Alcance estimado de la reforma* y *Coste estimado de la reforma*.
+**Haz:** en la ficha, señala a la izquierda la línea de tiempo de etapas (completadas, en curso, bloqueadas) y a la derecha el panel «Siguiente paso»: el botón **Avanzar a Firma** deshabilitado con la lista «Para avanzar falta»: *Alcance estimado de la reforma* y *Coste estimado de la reforma*.
 
 **Di:** «El botón está bloqueado y dice exactamente qué falta: justo los dos datos que hoy le llegan vacíos a reformas.»
 
@@ -43,7 +43,7 @@ Pulsa **Firmar y enviar a reformas**. Aparece la notificación «Traspaso enviad
 
 ### 5. Ver el traspaso en reformas · ~20 s
 
-**Haz:** pulsa **Ver en la bandeja de Reno** en la notificación (o **Reformas · Reno** en la cabecera). Abre el traspaso nuevo, marcado como **Nuevo** y **Pendiente de revisión**. Enseña el «Resumen para obra» (alcance, coste, m², fotos) y pulsa **Aceptar**.
+**Haz:** pulsa **Ver en la bandeja de Reno** en la notificación (o **Reformas · Reno** en la barra lateral). Abre el traspaso nuevo, marcado como **Nuevo** y **Pendiente de revisión**. Enseña el «Resumen para obra» (alcance, coste, m², fotos) y pulsa **Aceptar**.
 
 **Di:** «Reformas recibe la ficha completa en solo lectura. Si algo falla, puede devolverla a Supply indicando el campo y un comentario, y la vivienda vuelve a Firma con una alerta.» (Opcional: enseña en el Embudo la vivienda de Embajadores, devuelta por «faltan m² útiles».)
 
@@ -57,7 +57,7 @@ Pulsa **Firmar y enviar a reformas**. Aparece la notificación «Traspaso enviad
 
 ## Si sobra tiempo: modo piloto
 
-Activa **Modo piloto** en la cabecera, abre la vivienda de **Calle de la Oca** (Lead) y enseña que el botón pasa a amarillo: deja avanzar, pero registra los campos pendientes en el historial. «Para desplegarlo sin frenar al equipo: primero medimos, luego bloqueamos.»
+Activa **Modo piloto** en la barra lateral (en móvil, en el menú «⋯»), abre la vivienda de **Calle de la Oca** (Lead) y enseña que el botón pasa a amarillo: deja avanzar, pero registra los campos pendientes en el historial. «Para desplegarlo sin frenar al equipo: primero medimos, luego bloqueamos.»
 
 ## Plan B
 

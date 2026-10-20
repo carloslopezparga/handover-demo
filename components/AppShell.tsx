@@ -1,178 +1,276 @@
 "use client";
 
-// Cabecera común (marca, navegación, modo piloto, reiniciar demo) y avisos globales.
+// Marco común: barra lateral fina (escritorio) o cabecera ligera (móvil) con la marca,
+// la navegación, el modo piloto y «Reiniciar demo», más los avisos globales.
 
-import { RotateCcw, TriangleAlert } from "lucide-react";
+import { ChartColumn, Columns3, Ellipsis, Inbox, RotateCcw, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useStore } from "@/lib/store";
 import { Dialogo } from "./Dialogo";
 import { useNotificar } from "./Notificaciones";
 import { Boton } from "./ui";
 
-const NAVEGACION = [
-  { href: "/", etiqueta: "Embudo", activo: (p: string) => p === "/" || p.startsWith("/vivienda") },
-  { href: "/reformas", etiqueta: "Reformas · Reno", activo: (p: string) => p.startsWith("/reformas") },
-  { href: "/metricas", etiqueta: "Métricas", activo: (p: string) => p.startsWith("/metricas") },
+interface ItemNav {
+  href: string;
+  etiqueta: string;
+  corta: string;
+  icono: LucideIcon;
+  activo: (p: string) => boolean;
+}
+
+const NAVEGACION: ItemNav[] = [
+  { href: "/", etiqueta: "Embudo", corta: "Embudo", icono: Columns3, activo: (p) => p === "/" || p.startsWith("/vivienda") },
+  { href: "/reformas", etiqueta: "Reformas · Reno", corta: "Reno", icono: Inbox, activo: (p) => p.startsWith("/reformas") },
+  { href: "/metricas", etiqueta: "Métricas", corta: "Métricas", icono: ChartColumn, activo: (p) => p.startsWith("/metricas") },
 ];
 
-function InterruptorPiloto() {
-  const { modoPiloto, setModoPiloto, cargado } = useStore();
+/** Activa o desactiva el modo piloto y avisa del cambio. */
+function useAlternarPiloto() {
+  const { modoPiloto, setModoPiloto } = useStore();
   const notificar = useNotificar();
+  return () => {
+    setModoPiloto(!modoPiloto);
+    notificar(
+      modoPiloto
+        ? { titulo: "Modo piloto desactivado", descripcion: "Los campos obligatorios vuelven a bloquear el avance.", tipo: "info" }
+        : { titulo: "Modo piloto activado", descripcion: "Se avisa de los campos que faltan, pero se deja avanzar.", tipo: "aviso" },
+    );
+  };
+}
+
+function InterruptorPiloto() {
+  const { modoPiloto, cargado } = useStore();
+  const alternar = useAlternarPiloto();
   return (
-    <label className="flex cursor-pointer select-none items-center gap-2.5 text-[14px] font-medium text-crema/90">
-      <span className="hidden sm:inline">Modo piloto</span>
-      <span className="sm:hidden">Piloto</span>
+    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2 select-none hover:bg-crema-oscuro/60">
+      <span className="min-w-0">
+        <span className="block text-sm font-medium text-tinta">Modo piloto</span>
+        <span className="block text-[12px] leading-4 text-tinta-tenue">{modoPiloto ? "Avisa sin bloquear" : "Bloqueo activo"}</span>
+      </span>
       <button
         type="button"
         role="switch"
         aria-checked={modoPiloto}
         aria-label="Modo piloto"
         disabled={!cargado}
-        onClick={() => {
-          setModoPiloto(!modoPiloto);
-          notificar(
-            modoPiloto
-              ? { titulo: "Modo piloto desactivado", descripcion: "Los campos obligatorios vuelven a bloquear el avance.", tipo: "info" }
-              : { titulo: "Modo piloto activado", descripcion: "Se avisa de los campos que faltan, pero se deja avanzar.", tipo: "aviso" },
-          );
-        }}
-        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-crema ${
-          modoPiloto ? "bg-ambar-borde" : "bg-white/25"
-        }`}
+        onClick={alternar}
+        className={`relative h-5 w-9 shrink-0 rounded-full transition-colors duration-200 ${modoPiloto ? "bg-ambar-borde" : "bg-borde-fuerte"}`}
       >
-        <span className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition-transform ${modoPiloto ? "translate-x-5" : ""}`} />
+        <span
+          className={`absolute top-0.5 left-0.5 size-4 rounded-full bg-white shadow-[0_1px_2px_rgb(16_41_42/0.25)] transition-transform duration-200 ease-[var(--ease-suave)] ${modoPiloto ? "translate-x-4" : ""}`}
+        />
       </button>
     </label>
   );
 }
 
-function BotonReiniciar() {
+function DialogoReiniciar({ abierto, onCerrar }: { abierto: boolean; onCerrar: () => void }) {
   const { reiniciarDemo } = useStore();
   const notificar = useNotificar();
   const router = useRouter();
-  const [abierto, setAbierto] = useState(false);
   return (
-    <>
+    <Dialogo
+      abierto={abierto}
+      onCerrar={onCerrar}
+      titulo="¿Reiniciar la demo?"
+      descripcion="Se restauran las 8 viviendas y los 2 traspasos de ejemplo. Los cambios que hayas hecho se perderán."
+      pie={
+        <>
+          <Boton variante="secundario" onClick={onCerrar}>
+            Cancelar
+          </Boton>
+          <Boton
+            onClick={() => {
+              reiniciarDemo();
+              onCerrar();
+              router.push("/");
+              notificar({ titulo: "Demo reiniciada", descripcion: "Datos de ejemplo restaurados.", tipo: "info" });
+            }}
+          >
+            Reiniciar demo
+          </Boton>
+        </>
+      }
+    >
+      <p className="text-[15px] text-tinta-suave">El modo piloto también vuelve a quedar desactivado.</p>
+    </Dialogo>
+  );
+}
+
+function BotonReiniciar({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-tinta-suave transition-colors hover:bg-crema-oscuro/60 hover:text-tinta"
+      title="Restaurar los datos de ejemplo"
+    >
+      <RotateCcw className="size-4 text-tinta-tenue" strokeWidth={1.75} aria-hidden />
+      Reiniciar demo
+    </button>
+  );
+}
+
+function Marca() {
+  return (
+    <Link href="/" className="inline-flex items-baseline gap-2 rounded-md">
+      <span className="font-display text-[21px] leading-none font-semibold tracking-[-0.03em] text-tinta">Vistral</span>
+      <span className="hidden text-[13px] font-medium text-tinta-tenue sm:inline">Supply</span>
+    </Link>
+  );
+}
+
+/** Menú de opciones de la demo en móvil (modo piloto y reiniciar). */
+function MenuOpcionesMovil({ onReiniciar }: { onReiniciar: () => void }) {
+  const { modoPiloto } = useStore();
+  const [abierto, setAbierto] = useState(false);
+  const caja = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!abierto) return;
+    const fuera = (e: PointerEvent) => {
+      if (!caja.current?.contains(e.target as Node)) setAbierto(false);
+    };
+    const tecla = (e: KeyboardEvent) => e.key === "Escape" && setAbierto(false);
+    document.addEventListener("pointerdown", fuera);
+    document.addEventListener("keydown", tecla);
+    return () => {
+      document.removeEventListener("pointerdown", fuera);
+      document.removeEventListener("keydown", tecla);
+    };
+  }, [abierto]);
+
+  return (
+    <div ref={caja} className="relative">
       <button
         type="button"
-        onClick={() => setAbierto(true)}
-        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-crema/60 transition-colors hover:bg-white/10 hover:text-crema"
-        title="Restaurar los datos de ejemplo"
+        onClick={() => setAbierto((a) => !a)}
+        aria-expanded={abierto}
+        aria-label="Opciones de la demo"
+        className="relative flex size-10 items-center justify-center rounded-lg text-tinta-suave transition-colors hover:bg-crema-oscuro/70 hover:text-tinta"
       >
-        <RotateCcw className="size-3.5" aria-hidden />
-        <span className="hidden lg:inline">Reiniciar demo</span>
-        <span className="sr-only lg:hidden">Reiniciar demo</span>
+        <Ellipsis className="size-5" aria-hidden />
+        {modoPiloto && <span className="absolute top-2 right-2 size-2 rounded-full bg-ambar-borde ring-2 ring-crema" aria-hidden />}
       </button>
-      <Dialogo
-        abierto={abierto}
-        onCerrar={() => setAbierto(false)}
-        titulo="¿Reiniciar la demo?"
-        descripcion="Se restauran las 8 viviendas y los 2 traspasos de ejemplo. Los cambios que hayas hecho se perderán."
-        pie={
-          <>
-            <Boton variante="secundario" onClick={() => setAbierto(false)}>
-              Cancelar
-            </Boton>
-            <Boton
-              onClick={() => {
-                reiniciarDemo();
-                setAbierto(false);
-                router.push("/");
-                notificar({ titulo: "Demo reiniciada", descripcion: "Datos de ejemplo restaurados.", tipo: "info" });
-              }}
-            >
-              Reiniciar demo
-            </Boton>
-          </>
-        }
-      >
-        <p className="text-[15px] text-tinta-suave">El modo piloto también vuelve a quedar desactivado.</p>
-      </Dialogo>
-    </>
+      {abierto && (
+        <div className="animar-despliegue absolute top-full right-0 z-50 mt-2 w-64 rounded-xl border border-borde bg-papel p-2 shadow-elevada">
+          <InterruptorPiloto />
+          <div className="my-1 h-px bg-borde" />
+          <BotonReiniciar
+            onClick={() => {
+              setAbierto(false);
+              onReiniciar();
+            }}
+          />
+        </div>
+      )}
+    </div>
   );
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { traspasos, modoPiloto, errorGuardado } = useStore();
+  const alternarPiloto = useAlternarPiloto();
+  const [reiniciando, setReiniciando] = useState(false);
   const pendientes = traspasos.filter((t) => t.estado === "Pendiente de revisión").length;
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 bg-tinta text-crema shadow-[0_1px_0_rgb(255_255_255/0.06)]">
-        <div className="mx-auto flex max-w-[1600px] items-center gap-4 px-4 py-3 sm:px-6">
-          <Link href="/" className="flex shrink-0 items-center gap-2.5">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-crema text-[15px] font-bold text-tinta" aria-hidden>
-              V
-            </span>
-            <span className="text-[15px] font-semibold tracking-tight sm:text-[17px]">
-              Vistral · Supply <span className="text-[13px] font-normal text-crema/60 sm:text-[17px]">(prototipo)</span>
-            </span>
-          </Link>
-          <nav className="ml-6 hidden items-center gap-1 lg:flex" aria-label="Principal">
-            {NAVEGACION.map((n) => (
-              <EnlaceNav key={n.href} href={n.href} activo={n.activo(pathname)} contador={n.href === "/reformas" ? pendientes : 0}>
-                {n.etiqueta}
-              </EnlaceNav>
-            ))}
-          </nav>
-          <div className="ml-auto flex items-center gap-3">
-            <div className="hidden lg:block">
-              <BotonReiniciar />
-            </div>
-            <InterruptorPiloto />
-          </div>
+    <div className="min-h-screen lg:flex">
+      {/* Escritorio: barra lateral fina */}
+      <aside className="hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[200px] lg:shrink-0 lg:flex-col lg:px-3 lg:py-6">
+        <div className="px-3">
+          <Marca />
         </div>
-        <div className="flex items-center gap-2 border-t border-white/10 px-3 py-2 lg:hidden">
-          <nav className="flex min-w-0 flex-1 gap-1 overflow-x-auto" aria-label="Principal móvil">
+        <nav className="mt-8 flex flex-col gap-1" aria-label="Principal">
+          {NAVEGACION.map((n) => (
+            <EnlaceLateral key={n.href} item={n} activo={n.activo(pathname)} contador={n.href === "/reformas" ? pendientes : 0} />
+          ))}
+        </nav>
+        <div className="mt-auto flex flex-col gap-1">
+          <InterruptorPiloto />
+          <BotonReiniciar onClick={() => setReiniciando(true)} />
+          <p className="mt-4 px-3 text-[12px] leading-4 text-tinta-tenue">Prototipo · datos ficticios</p>
+        </div>
+      </aside>
+
+      {/* Móvil: cabecera ligera */}
+      <header className="sticky top-0 z-40 border-b border-borde bg-crema/90 backdrop-blur-md lg:hidden">
+        <div className="flex h-14 items-center gap-4 pr-2 pl-4">
+          <Marca />
+          <nav className="flex min-w-0 flex-1 items-center gap-4 overflow-x-auto" aria-label="Principal">
             {NAVEGACION.map((n) => (
-              <EnlaceNav key={n.href} href={n.href} activo={n.activo(pathname)} contador={n.href === "/reformas" ? pendientes : 0}>
-                {n.etiqueta}
-              </EnlaceNav>
+              <EnlaceSuperior key={n.href} item={n} activo={n.activo(pathname)} contador={n.href === "/reformas" ? pendientes : 0} />
             ))}
           </nav>
-          <BotonReiniciar />
+          <MenuOpcionesMovil onReiniciar={() => setReiniciando(true)} />
         </div>
       </header>
 
-      {modoPiloto && (
-        <div className="border-b border-ambar-borde bg-ambar-claro text-ambar">
-          <div className="mx-auto flex max-w-[1600px] items-center gap-2.5 px-4 py-2.5 text-[15px] sm:px-6">
-            <TriangleAlert className="size-4 shrink-0" aria-hidden />
-            <p>
-              <strong className="font-semibold">Modo piloto activado:</strong> los campos obligatorios avisan pero no bloquean. Cada avance con campos pendientes queda
-              registrado.
+      <div className="min-w-0 flex-1 lg:py-2 lg:pr-2">
+        <div className="min-h-[calc(100vh-56px)] bg-papel lg:min-h-[calc(100vh-16px)] lg:rounded-xl lg:border lg:border-borde">
+          {modoPiloto && (
+            <div className="flex items-center gap-3 border-b border-ambar-borde/70 bg-ambar-claro px-4 py-2 text-sm text-ambar sm:px-6 lg:rounded-t-xl lg:px-8">
+              <span className="size-2 shrink-0 rounded-full bg-ambar-borde" aria-hidden />
+              <p className="min-w-0 flex-1">
+                <strong className="font-semibold">Modo piloto.</strong>
+                <span className="sm:hidden"> Avisa pero no bloquea.</span>
+                <span className="hidden sm:inline"> Los campos obligatorios avisan pero no bloquean; cada avance con campos pendientes queda registrado.</span>
+              </p>
+              <button type="button" onClick={alternarPiloto} className="shrink-0 rounded font-semibold underline decoration-ambar/40 underline-offset-2 hover:decoration-ambar">
+                Desactivar
+              </button>
+            </div>
+          )}
+          {errorGuardado && (
+            <p className="border-b border-ladrillo/20 bg-ladrillo-claro px-4 py-2 text-sm text-ladrillo-oscuro sm:px-6 lg:px-8">
+              Este navegador no permite guardar datos: la demo funciona, pero los cambios se perderán al recargar la página.
             </p>
-          </div>
+          )}
+          <main className="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">{children}</main>
         </div>
-      )}
-      {errorGuardado && (
-        <div className="border-b border-ladrillo/30 bg-ladrillo-claro text-ladrillo-oscuro">
-          <p className="mx-auto max-w-[1600px] px-4 py-2.5 text-[15px] sm:px-6">
-            Este navegador no permite guardar datos: la demo funciona, pero los cambios se perderán al recargar la página.
-          </p>
-        </div>
-      )}
+      </div>
 
-      <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-6 sm:px-6 sm:py-8">{children}</main>
+      <DialogoReiniciar abierto={reiniciando} onCerrar={() => setReiniciando(false)} />
     </div>
   );
 }
 
-function EnlaceNav({ href, activo, contador, children }: { href: string; activo: boolean; contador: number; children: ReactNode }) {
+function EnlaceLateral({ item, activo, contador }: { item: ItemNav; activo: boolean; contador: number }) {
+  const Icono = item.icono;
   return (
     <Link
-      href={href}
+      href={item.href}
       aria-current={activo ? "page" : undefined}
-      className={`inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-1.5 text-[15px] font-medium transition-colors ${
-        activo ? "bg-white/12 text-crema" : "text-crema/70 hover:bg-white/6 hover:text-crema"
+      className={`flex h-9 items-center gap-3 rounded-lg px-3 text-[15px] font-medium transition-colors duration-150 ${
+        activo ? "bg-papel text-tinta shadow-[0_0_0_1px_var(--color-borde)]" : "text-tinta-suave hover:bg-crema-oscuro/60 hover:text-tinta"
       }`}
     >
-      {children}
+      <Icono className={`size-4 shrink-0 ${activo ? "text-tinta" : "text-tinta-tenue"}`} strokeWidth={1.75} aria-hidden />
+      <span className="flex-1 truncate">{item.etiqueta}</span>
       {contador > 0 && (
-        <span className="min-w-5 rounded-full bg-ladrillo px-1.5 text-center text-[12px] font-bold leading-5 text-white" aria-label={`${contador} pendientes`}>
+        <span className="text-[13px] font-semibold text-ladrillo tabular-nums" aria-label={`${contador} pendientes de revisión`}>
+          {contador}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+function EnlaceSuperior({ item, activo, contador }: { item: ItemNav; activo: boolean; contador: number }) {
+  return (
+    <Link
+      href={item.href}
+      aria-current={activo ? "page" : undefined}
+      className={`relative flex h-14 shrink-0 items-center gap-1 text-[15px] font-medium transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full ${
+        activo ? "text-tinta after:bg-tinta" : "text-tinta-tenue after:bg-transparent hover:text-tinta"
+      }`}
+    >
+      {item.corta}
+      {contador > 0 && (
+        <span className="text-[12px] font-semibold text-ladrillo tabular-nums" aria-label={`${contador} pendientes de revisión`}>
           {contador}
         </span>
       )}

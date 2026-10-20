@@ -1,30 +1,19 @@
 // Ficha completa en solo lectura, tal y como se copió en el traspaso.
 
-import { CircleAlert } from "lucide-react";
 import { ETAPAS } from "@/lib/stages";
 import type { DefinicionCampo, Ficha } from "@/lib/types";
 import { textoValor, validarCampo } from "@/lib/validation";
 import { CampoFotos } from "../ficha/CampoFotos";
+import { Punto } from "../ui";
 
 function Valor({ def, ficha }: { def: DefinicionCampo; ficha: Ficha }) {
   const valor = ficha[def.clave] ?? null;
   const r = validarCampo(def, valor, ficha);
   if (def.obligatorio && !r.completo) {
     return (
-      <span className="inline-flex items-center gap-1.5 font-semibold text-ladrillo">
-        <CircleAlert className="size-4" aria-hidden />
+      <span className="inline-flex items-center gap-2 font-medium text-ladrillo">
+        <Punto tono="accion" />
         {r.vacio ? "Sin dato" : `${textoValor(def, valor)} · ${r.error}`}
-      </span>
-    );
-  }
-  if (def.tipo === "multiSeleccion" && Array.isArray(valor) && valor.length > 0) {
-    return (
-      <span className="flex flex-wrap gap-1.5">
-        {valor.map((v) => (
-          <span key={v} className="rounded-full bg-salvia-claro px-2.5 py-0.5 text-sm font-medium text-salvia-oscuro">
-            {def.opciones?.find((o) => o.valor === v)?.etiqueta ?? v}
-          </span>
-        ))}
       </span>
     );
   }
@@ -42,22 +31,28 @@ interface Props {
 
 export function FichaSoloLectura({ ficha, resaltar, fotosEnResumen = false }: Props) {
   return (
-    <div className="space-y-4">
-      {ETAPAS.map((etapa) => (
-        <section key={etapa.id} className="rounded-2xl border border-borde bg-papel shadow-suave">
-          <h3 className="border-b border-borde px-5 py-3 text-[15px] font-bold text-tinta">{etapa.nombre}</h3>
-          <dl className="divide-y divide-borde">
+    <div className="divide-y divide-borde rounded-xl border border-borde bg-white">
+      {ETAPAS.map((etapa, i) => (
+        <section key={etapa.id} className="grid gap-2 px-4 py-6 sm:px-6 md:grid-cols-[176px_minmax(0,1fr)] md:gap-8">
+          <h3 className="flex items-baseline gap-2 font-display text-base font-semibold tracking-[-0.01em] text-tinta">
+            <span className="text-[13px] font-medium text-tinta-tenue tabular-nums">{i + 1}</span>
+            {etapa.nombre}
+          </h3>
+          <dl>
             {etapa.campos.map((c) =>
               c.tipo === "fotos" && !fotosEnResumen ? (
-                <div key={c.clave} className="px-5 py-3.5">
-                  <dt className="mb-2 text-sm font-medium text-tinta-suave">{c.etiqueta}</dt>
+                <div key={c.clave} className="py-2">
+                  <dt className="mb-2 text-[13px] font-medium text-tinta-tenue">{c.etiqueta}</dt>
                   <dd>
                     <CampoFotos id={`ro-${c.clave}`} valor={Array.isArray(ficha[c.clave]) ? (ficha[c.clave] as string[]) : []} onCambio={() => {}} soloLectura />
                   </dd>
                 </div>
               ) : (
-                <div key={c.clave} className={`grid gap-1 px-5 py-3 sm:grid-cols-[220px_1fr] sm:gap-4 ${resaltar === c.clave ? "bg-ladrillo-claro/60" : ""}`}>
-                  <dt className="text-sm font-medium text-tinta-suave">{c.etiqueta}</dt>
+                <div
+                  key={c.clave}
+                  className={`grid gap-1 rounded-md py-2 sm:grid-cols-[200px_minmax(0,1fr)] sm:gap-4 ${resaltar === c.clave ? "-mx-2 bg-ladrillo-claro/70 px-2" : ""}`}
+                >
+                  <dt className="text-[13px] font-medium text-tinta-tenue sm:text-sm sm:font-normal">{c.etiqueta}</dt>
                   <dd className="text-[15px]">
                     <Valor def={c} ficha={ficha} />
                   </dd>
